@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/services/auth.dart';
+import 'package:toothly/shared/constants.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -17,7 +18,7 @@ class _RegisterState extends State<Register> {
   //text field state
   String email = '';
   String password = '';
-  String error='';
+  String error = '';
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +44,19 @@ class _RegisterState extends State<Register> {
               key: _formKey,
               child: Column(children: <Widget>[
                 SizedBox(height: 20.0),
-                TextFormField(validator: (val) {
-                  return val.isEmpty ? 'Enter an email' : null;
-                }, onChanged: (val) {
-                  setState(() {
-                    email = val;
-                  });
-                }),
+                TextFormField(
+                    decoration: textInputDecoration.copyWith(hintText: 'Email'),
+                    validator: (val) {
+                      return val.isEmpty ? 'Enter an email' : null;
+                    },
+                    onChanged: (val) {
+                      setState(() {
+                        email = val;
+                      });
+                    }),
                 SizedBox(height: 20.0),
                 TextFormField(
+                    decoration: textInputDecoration.copyWith(hintText: 'Password'),
                     validator: (val) {
                       return val.length < 6 ? 'Enter a 6+ char password' : null;
                     },
@@ -72,20 +77,16 @@ class _RegisterState extends State<Register> {
                     if (_formKey.currentState.validate()) {
                       dynamic result = await _auth.registerWithEmailAndPssword(
                           email, password);
-                      if (result==null){
+                      if (result == null) {
                         setState(() {
-                          error="Please supply a valid email";
+                          error = "Please supply a valid email";
                         });
-
                       }
                     }
                   },
                 ),
                 SizedBox(height: 12.0),
-                Text(
-                  error,
-                  style: TextStyle(color: Colors.red,fontSize: 14.0)
-                )
+                Text(error, style: TextStyle(color: Colors.red, fontSize: 14.0))
               ]),
             ),
           ),
