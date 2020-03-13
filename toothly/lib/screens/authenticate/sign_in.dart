@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/services/auth.dart';
 import 'package:toothly/shared/constants.dart';
+import 'package:toothly/shared/loading.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
@@ -14,6 +15,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final AuthService _auth = AuthService();
   final _formkey = GlobalKey<FormState>();
+  bool loading = false;
 
   //text field state
   String email = '';
@@ -22,7 +24,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading(): Scaffold(
         backgroundColor: Colors.green[100],
         appBar: AppBar(
           backgroundColor: Colors.green[400],
@@ -55,7 +57,8 @@ class _SignInState extends State<SignIn> {
                   }),
               SizedBox(height: 20.0),
               TextFormField(
-                  decoration: textInputDecoration.copyWith(hintText: 'Password'),
+                  decoration:
+                      textInputDecoration.copyWith(hintText: 'Password'),
                   validator: (val) =>
                       val.length < 6 ? 'Invalid password' : null,
                   obscureText: true,
@@ -73,10 +76,14 @@ class _SignInState extends State<SignIn> {
                 ),
                 onPressed: () async {
                   if (_formkey.currentState.validate()) {
+                    setState(() => loading = true);
                     dynamic result =
                         await _auth.signInWithEmailAndPassword(email, password);
                     if (result == null) {
-                      setState(() => error = 'Invalid credentials');
+                      setState(() {
+                        error = 'Invalid credentials';
+                        loading = false;
+                      });
                     }
                   }
                 },
