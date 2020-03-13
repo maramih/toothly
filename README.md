@@ -1,2 +1,2 @@
-# toothly
+# Toothly
 Proiect de licenta - Aplicatie pentru gestionarea unui cabinet stomatologic
