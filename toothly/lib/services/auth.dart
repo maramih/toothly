@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toothly/models/user.dart';
+import 'package:toothly/services/database.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -47,6 +48,9 @@ class AuthService {
     try{
       AuthResult result= await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user=result.user;
+
+      //create a new document for the user with uid
+      await DatabaseService(uid: user.uid).updateUserData('new member', 'new member', 'medic', 18);
       return _userFromFirebaseUser(user);
     }catch(e){
       print(e.toString());
