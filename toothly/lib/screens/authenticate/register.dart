@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/services/auth.dart';
+import 'package:toothly/shared/colors.dart';
 import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
 
@@ -22,38 +23,52 @@ class _RegisterState extends State<Register> {
   String password = '';
   String error = '';
 
+  //validator with regex for emails
+  String validateEmail(String value) {
+    Pattern pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regex = new RegExp(pattern);
+    if (!regex.hasMatch(value))
+      return 'Enter Valid Email';
+    else
+      return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return loading
         ? Loading()
         : Scaffold(
-            backgroundColor: Colors.green[100],
-            appBar: AppBar(
-              backgroundColor: Colors.green[400],
-              elevation: 0.0,
-              title: Text('Sign up to Toothly'),
-              actions: <Widget>[
-                FlatButton.icon(
-                    onPressed: () {
-                      widget.toggleView();
-                    },
-                    icon: Icon(Icons.person),
-                    label: Text('Sign in'))
-              ],
-            ),
+            backgroundColor: Swatches.mySecondaryMint,
             body: SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
                 child: Form(
                   key: _formKey,
                   child: Column(children: <Widget>[
+                    Container(
+                      child: Center(
+                        child: Text(
+                          "Register",
+                          style: TextStyle(
+                              fontSize: 30.0, color: Swatches.myPrimaryGrey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      margin: EdgeInsets.all(40.0),
+                      height: 150.0,
+                      width: 150.0,
+                      decoration: BoxDecoration(
+                        color:Swatches.myPrimaryPurple,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     SizedBox(height: 20.0),
                     TextFormField(
+                      keyboardType: TextInputType.emailAddress,
                         decoration:
                             textInputDecoration.copyWith(hintText: 'Email'),
-                        validator: (val) {
-                          return val.isEmpty ? 'Enter an email' : null;
-                        },
+                        validator: validateEmail,
                         onChanged: (val) {
                           setState(() {
                             email = val;
@@ -76,7 +91,7 @@ class _RegisterState extends State<Register> {
                         }),
                     SizedBox(height: 20.0),
                     RaisedButton(
-                      color: Colors.redAccent,
+                      color: Swatches.myPrimaryRed,
                       child: Text(
                         "Register",
                         style: TextStyle(color: Colors.white),
@@ -99,7 +114,16 @@ class _RegisterState extends State<Register> {
                     ),
                     SizedBox(height: 12.0),
                     Text(error,
-                        style: TextStyle(color: Colors.red, fontSize: 14.0))
+                        style: TextStyle(color: Swatches.myPrimaryRed, fontSize: 14.0)),
+                    FlatButton.icon(
+                      onPressed: () {
+                        widget.toggleView();
+                      },
+                      icon: Icon(Icons.person),
+                      label: Text('Sign In'),
+                      color: Swatches.myPrimaryRed,
+                      textColor: Colors.white,
+                    ),
                   ]),
                 ),
               ),

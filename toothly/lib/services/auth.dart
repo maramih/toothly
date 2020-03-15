@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:toothly/models/user.dart';
 import 'package:toothly/services/database.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn=GoogleSignIn();
 
   //create user object based on FirebaseUser
   User _userFromFirebaseUser(FirebaseUser user) {
@@ -58,9 +60,36 @@ class AuthService {
     }
   }
 
+  //sign in with google account
+  Future signInWithGoogle() async{
+    try {
+      GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final FirebaseUser user = (await _auth.signInWithCredential(credential))
+          .user;
+      var dbs = await DatabaseService(uid: googleAuth.idToken);
+      print(googleAuth.accessToken);
+      if(dbs.userData ==null)
+        dbs.updateUserData(user.displayName, user.displayName, "client", 21);
+
+      return _userFromFirebaseUser(user);
+    }catch(e){
+      print(e.toString());
+      return null;
+    }
+
+  }
+
 //sign out
 Future singOut() async{
     try{
+      await _googleSignIn.signOut();
       return await _auth.signOut();
     }catch(e){
       print(e.toString());

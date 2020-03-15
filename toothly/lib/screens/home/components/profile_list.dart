@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toothly/models/profile.dart';
-import 'package:toothly/screens/home/profile_tile.dart';
+import 'file:///D:/FlutterApps/Licenta/toothly/lib/screens/home/components/profile_tile.dart';
 
 class ProfileList extends StatefulWidget {
   @override
