@@ -5,7 +5,8 @@ import 'package:toothly/services/database.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn=GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  static bool _signedInWithGoogle = false;
 
   //create user object based on FirebaseUser
   User _userFromFirebaseUser(FirebaseUser user) {
@@ -15,7 +16,6 @@ class AuthService {
   //auth change user stream
   Stream<User> get user {
     return _auth.onAuthStateChanged
-      //  .map((FirebaseUser user) => _userFromFirebaseUser(user));
         .map(_userFromFirebaseUser);
   }
 
@@ -33,12 +33,13 @@ class AuthService {
 
 //sign in with email&pass
 
-  Future signInWithEmailAndPassword(String email, String password) async{
-    try{
-      AuthResult result=await _auth.signInWithEmailAndPassword(email: email, password: password);
+  Future signInWithEmailAndPassword(String email, String password) async {
+    try {
+      AuthResult result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       FirebaseUser user = result.user;
       return _userFromFirebaseUser(user);
-    }catch(e){
+    } catch (e) {
       print(e.toString());
       return null;
     }
@@ -46,22 +47,24 @@ class AuthService {
 
 //register with email&pass
 
-  Future registerWithEmailAndPssword(String email, String password) async{
-    try{
-      AuthResult result= await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      FirebaseUser user=result.user;
+  Future registerWithEmailAndPssword(String email, String password) async {
+    try {
+      AuthResult result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      FirebaseUser user = result.user;
 
       //create a new document for the user with uid
-      await DatabaseService(uid: user.uid).updateUserData('new member', 'new member', 'medic', 18);
+      await DatabaseService(uid: user.uid)
+          .updateUserData('new member', 'new member', 'medic', 18);
       return _userFromFirebaseUser(user);
-    }catch(e){
+    } catch (e) {
       print(e.toString());
       return null;
     }
   }
 
   //sign in with google account
-  Future signInWithGoogle() async{
+  Future signInWithGoogle() async {
     try {
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -71,29 +74,37 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      final FirebaseUser user = (await _auth.signInWithCredential(credential))
-          .user;
-      var dbs = await DatabaseService(uid: googleAuth.idToken);
-      print(googleAuth.accessToken);
-      if(dbs.userData ==null)
-        dbs.updateUserData(user.displayName, user.displayName, "client", 21);
+      final FirebaseUser user =
+          (await _auth.signInWithCredential(credential)).user;
 
+      if (user != null) {
+        print(user != null);
+        _signedInWithGoogle = true;
+      }
+
+
+      var dbs = await DatabaseService(uid: user.uid);
+      if (dbs.verifyUserData==false)
+        dbs.updateUserData(user.displayName, user.displayName, "client", 21);
+      
       return _userFromFirebaseUser(user);
-    }catch(e){
+    } catch (e) {
       print(e.toString());
       return null;
     }
-
   }
 
 //sign out
-Future singOut() async{
-    try{
-      await _googleSignIn.signOut();
-      return await _auth.signOut();
-    }catch(e){
+  Future singOut() async {
+    try {
+      if (_signedInWithGoogle) {
+        _signedInWithGoogle = false;
+        await _googleSignIn.signOut();
+      }
+        return await _auth.signOut();
+    } catch (e) {
       print(e.toString());
       return null;
     }
-}
+  }
 }

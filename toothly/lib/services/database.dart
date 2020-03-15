@@ -55,4 +55,18 @@ Stream<UserData> get userData{
     return profileCollection.document(uid).snapshots().map(_userDataFromSnapshot);
 }
 
+  bool get verifyUserData{
+    var docRef = profileCollection.document(uid);
+
+    docRef.get().then((doc) {
+      if(doc.exists){
+        return true;
+      }
+      else{
+        return false;
+      }
+    });
+    return false;
+  }
+
 }
