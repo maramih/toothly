@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:toothly/shared/colors.dart';
 import 'package:toothly/shared/constants.dart';
 
-class SettingsMenu extends StatelessWidget {
+class Dashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: Text("Dashboard"),
       ),
       backgroundColor: Swatches.mySecondaryMint,
       body: Center(
-        child: Text("Set ME"),
+        child: Text("DASH ME"),
       ),
       bottomNavigationBar: bottomBar,
     );
