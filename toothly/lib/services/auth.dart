@@ -83,10 +83,10 @@ class AuthService {
       }
 
 
-      var dbs = await DatabaseService(uid: user.uid);
+      var dbs = DatabaseService(uid: user.uid);
       if (dbs.verifyUserData==false)
         dbs.updateUserData(user.displayName, user.displayName, "client", 21);
-      
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
