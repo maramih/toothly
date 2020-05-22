@@ -4,6 +4,7 @@ import 'package:toothly/models/user.dart';
 import 'package:toothly/screens/wrapper.dart';
 import 'package:toothly/services/auth.dart';
 
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
