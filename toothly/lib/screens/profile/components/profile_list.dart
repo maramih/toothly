@@ -5,10 +5,10 @@ import './profile_tile.dart';
 
 class ProfileList extends StatefulWidget {
   @override
-  _ProfileListState createState() => _ProfileListState();
+  _ProfileList createState() => _ProfileList();
 }
 
-class _ProfileListState extends State<ProfileList> {
+class _ProfileList extends State<ProfileList> {
   @override
   Widget build(BuildContext context) {
     final profiles = Provider.of<List<Profile>>(context)??[];

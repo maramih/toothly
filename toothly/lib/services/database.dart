@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toothly/models/profile.dart';
 import 'package:toothly/models/user.dart';
+import 'package:toothly/shared/ERoleTypes.dart';
+
 
 class DatabaseService {
   final String uid;
@@ -11,7 +13,7 @@ class DatabaseService {
   final CollectionReference profileCollection =
   Firestore.instance.collection('profiles');
 
-  Future updateUserData(String firstName, String surname, String role,
+  Future updateUserData(String firstName, String surname, int role,
       int age) async {
     return await profileCollection.document(uid).setData({
       'firstname': firstName,
@@ -27,7 +29,7 @@ class DatabaseService {
         return Profile(
         firstname: doc.data['firstname'] ?? '',
         surname: doc.data['surname'] ?? '',
-        role: doc.data['role'] ?? '',
+        role: doc.data['role'] ?? ERoleTypes.client.index,
         age: doc.data['age'] ?? 0
     );
   } ).toList();
@@ -55,18 +57,11 @@ Stream<UserData> get userData{
     return profileCollection.document(uid).snapshots().map(_userDataFromSnapshot);
 }
 
-  bool get verifyUserData{
-    var docRef = profileCollection.document(uid);
-
-    docRef.get().then((doc) {
-      if(doc.exists){
-        return true;
-      }
-      else{
-        return false;
-      }
-    });
-    return false;
+  Future <bool> get verifyUserData async{
+    if(userData!=null)
+    return userData.first.then((value) => value==null ? false:true );
+    else
+      return true;
   }
 
 }

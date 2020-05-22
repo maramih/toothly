@@ -2,11 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:toothly/models/user.dart';
 import 'package:toothly/services/database.dart';
+import 'package:toothly/shared/ERoleTypes.dart';
+
+
+
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   static bool _signedInWithGoogle = false;
+
 
   //create user object based on FirebaseUser
   User _userFromFirebaseUser(FirebaseUser user) {
@@ -45,6 +50,7 @@ class AuthService {
     }
   }
 
+
 //register with email&pass
 
   Future registerWithEmailAndPssword(String email, String password) async {
@@ -55,7 +61,8 @@ class AuthService {
 
       //create a new document for the user with uid
       await DatabaseService(uid: user.uid)
-          .updateUserData('new member', 'new member', 'medic', 18);
+          .updateUserData('N/A', 'N/A', ERoleTypes.client.index, 0);
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
@@ -84,9 +91,12 @@ class AuthService {
 
 
       var dbs = DatabaseService(uid: user.uid);
-      if (dbs.verifyUserData==false)
-        dbs.updateUserData(user.displayName, user.displayName, "client", 21);
-
+      if (await dbs.verifyUserData==false)
+        {
+          List<String>fullName=user.displayName.split(" ");
+          int len=fullName.length-1;
+          dbs.updateUserData(fullName.getRange(0,len).join(" "), fullName[len], ERoleTypes.admin.index, 0);
+        }
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
