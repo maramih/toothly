@@ -18,117 +18,125 @@ class _SignInState extends State<SignIn> {
   final _formkey = GlobalKey<FormState>();
   bool loading = false;
 
-  //text field state
+  //text field states
   String email = '';
   String password = '';
   String error = '';
 
-//validator with regex for emails
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
-    else
-      return null;
+  @override
+  Widget build(BuildContext context) => _SignInView(this);
+
+  //handlers for button actions
+  void handleEmailOnChange(value)=> setState(()=> email = value);
+  void handlePasswordOnChange(value)=> setState(()=> password = value);
+  void handleSignInButton() async {
+    if (_formkey.currentState.validate()) {
+      setState(() => loading = true);
+      dynamic result = await _auth
+          .signInWithEmailAndPassword(email, password);
+      if (result == null) {
+        setState(() {
+          error = 'CREDENȚIALE INVALIDE';
+          loading = false;
+        });
+      }
+      else
+        error='';
+    }
+  }
+  void handleSignInWithGoogleButton() async {
+    dynamic result = await _auth
+        .signInWithGoogle();
   }
 
+}
+
+class _SignInView extends StatelessWidget{
+  final _SignInState state;
+  const _SignInView(this.state,{Key key}):super(key:key);
   @override
   Widget build(BuildContext context) {
-    return loading
+    return state.loading
         ? Loading()
         : Scaffold(
-            backgroundColor: Swatches.mySecondaryMint,
-            body: SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-                child: Form(
-                  key: _formkey,
-                  child: Column(children: <Widget>[
-                    Container(
-                      child: Center(
-                        child: Text(
-                          "Login",
-                          style: TextStyle(
-                              fontSize: 50.0, color: Swatches.myPrimaryGrey),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      margin: EdgeInsets.all(40.0),
-                      height: 150.0,
-                      width: 150.0,
-                      decoration: BoxDecoration(
-                        color:Swatches.myPrimaryPurple,
-                        shape: BoxShape.circle,
-                      ),
+        body: SingleChildScrollView(
+          child: Container(
+            height:  MediaQuery.of(context).size.height,
+            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+            child: Form(
+              key: state._formkey,
+              child: Column(children: <Widget>[
+                Container(
+                  child: Center(
+                    child: Text(
+                      "Login",
+                      style: TextStyle(
+                          fontSize: 50.0, color: Swatches.green1),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        decoration:
-                            textInputDecoration.copyWith(hintText: 'Email'),
-                        validator: validateEmail,
-                        onChanged: (val) {
-                          setState(() {
-                            email = val;
-                          });
-                        }),
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                        decoration:
-                            textInputDecoration.copyWith(hintText: 'Password'),
-                        validator: (val) =>
-                            val.length < 6 ? 'Invalid password' : null,
-                        obscureText: true,
-                        onChanged: (val) {
-                          setState(() {
-                            password = val;
-                          });
-                        }),
-                    SizedBox(height: 20.0),
-                    RaisedButton(
-                      color: Swatches.myPrimaryRed,
-                      child: Text(
-                        "Sign in",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () async {
-                        if (_formkey.currentState.validate()) {
-                          setState(() => loading = true);
-                          dynamic result = await _auth
-                              .signInWithEmailAndPassword(email, password);
-                          if (result == null) {
-                            setState(() {
-                              error = 'Invalid credentials';
-                              loading = false;
-                            });
-                          }
-                        }
-                      },
-                    ),
-                    FlatButton.icon(
-                      onPressed: () {
-                        widget.toggleView();
-                      },
-                      icon: Icon(Icons.person),
-                      label: Text('Register'),
-                      color: Swatches.myPrimaryRed,
-                      textColor: Colors.white,
-                    ),
-                    FlatButton.icon(
-                      onPressed: () async {
-                        dynamic result = await _auth
-                            .signInWithGoogle();
-                      },
-                      icon: Icon(Icons.account_circle),
-                      label: Text('Sign in w/ Google'),
-                      color: Swatches.myPrimaryRed,
-                      textColor: Colors.white,
-                    )
-                  ]),
+                  ),
+                  margin: EdgeInsets.all(40.0),
+                  height: 150.0,
+                  width: 150.0,
+                  decoration: BoxDecoration(
+                    color:Colors.white,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-            ));
+                SizedBox(height: 20.0),
+                TextFormField(
+                    keyboardType: TextInputType.emailAddress,
+                    decoration:
+                    textInputDecoration.copyWith(hintText: 'Email'),
+                    validator: validateEmail,
+                    onChanged: (value) {
+                      state.handleEmailOnChange(value);
+                    }),
+                SizedBox(height: 20.0),
+                TextFormField(
+                    decoration:
+                    textInputDecoration.copyWith(hintText: 'Parola'),
+                    validator: (val) =>
+                    val.length < 6 ? 'Parolă invalidă' : null,
+                    obscureText: true,
+                    onChanged: (value) {
+                      state.handlePasswordOnChange(value);
+                    }),
+                Text(state.error,style: TextStyle(color: Swatches.myPrimaryRed,fontSize: 18,fontStyle: FontStyle.italic),),
+                SizedBox(height: 20.0),
+                SizedBox(height: 20.0),
+                RaisedButton(
+                  color: Swatches.myPrimaryRed,
+                  child: Text(
+                    "Sign in",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    state.handleSignInButton();
+                  },
+                ),
+                FlatButton.icon(
+                  onPressed: () {
+                    state.widget.toggleView();
+                  },
+                  icon: Icon(Icons.person),
+                  label: Text('Register'),
+                  color: Swatches.myPrimaryRed,
+                  textColor: Colors.white,
+                ),
+                FlatButton.icon(
+                  onPressed: ()  {
+                    state.handleSignInWithGoogleButton();
+                  },
+                  icon: Icon(Icons.account_circle),
+                  label: Text('Sign in w/ Google'),
+                  color: Swatches.myPrimaryRed,
+                  textColor: Colors.white,
+                )
+              ]),
+            ),
+            decoration: gradientBoxDecoration,
+          ),
+        ));
   }
 }

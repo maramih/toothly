@@ -1,11 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:toothly/screens/dashboard/dashboard.dart';
 import 'package:toothly/screens/profile/my_profile.dart';
 import 'package:toothly/screens/settings/settings.dart';
-
 import 'colors.dart';
 
+//strings
+const NO_DATA='N/A';
 
+//decorations
 const textInputDecoration = InputDecoration(
   fillColor: Colors.white,
   filled: true,
@@ -46,6 +49,7 @@ const gradientBoxDecoration=BoxDecoration(
   ),
 );
 
+//bottom bar for Scaffold widget
 const double iconSize=40;
 final bottomBar = Container(
   height: 60.0,
@@ -108,3 +112,33 @@ final bottomBar = Container(
     ),
   ),
 );
+
+
+//validators
+String validateEmail(String value) {
+  Pattern pattern =
+      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+  RegExp regex = new RegExp(pattern);
+  if (!regex.hasMatch(value))
+    return 'Introdu email valid';
+  else
+    return null;
+}
+String validatePassword(String value) {
+  //TODO
+//  Pattern pattern =
+//      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+//  RegExp regex = new RegExp(pattern);
+//  if (!regex.hasMatch(value))
+//    return 'Introdu email valid';
+//  else
+   return null;
+}
+DateTime convertStamp(Timestamp _stamp) {
+
+  if (_stamp != null) {
+    return Timestamp(_stamp.seconds, _stamp.nanoseconds).toDate();
+  } else {
+    return null;
+  }
+}

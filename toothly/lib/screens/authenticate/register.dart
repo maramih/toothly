@@ -23,110 +23,114 @@ class _RegisterState extends State<Register> {
   String password = '';
   String error = '';
 
-  //validator with regex for emails
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
+
+  @override
+  Widget build(BuildContext context) => _RegisterView(this);
+
+  void handleEmailOnChange(value)=> setState(()=> email = value);
+  void handlePasswordOnChange(value)=> setState(()=> password = value);
+  void handleRegisterButtonOnPressed()async {
+    if (_formKey.currentState.validate()) {
+      setState(() {
+        loading = true;
+      });
+      dynamic result = await _auth
+          .registerWithEmailAndPssword(email, password);
+      if (result == null) {
+        setState(() {
+          error = "Email-ul folosit se află deja în baza de date";
+          loading = false;
+        });
+      }
+    }
     else
-      return null;
+      error='';
   }
+}
+
+class _RegisterView extends StatelessWidget{
+  final _RegisterState state;
+  const _RegisterView(this.state,{Key key}):super(key:key);
 
   @override
   Widget build(BuildContext context) {
-    return loading
-        ? Loading()
-        : Scaffold(
-            backgroundColor: Swatches.mySecondaryMint,
-            body: SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(children: <Widget>[
-                    Container(
-                      child: Center(
-                        child: Text(
-                          "Register",
-                          style: TextStyle(
-                              fontSize: 30.0, color: Swatches.myPrimaryGrey),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      margin: EdgeInsets.all(40.0),
-                      height: 150.0,
-                      width: 150.0,
-                      decoration: BoxDecoration(
-                        color:Swatches.myPrimaryPurple,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                        decoration:
-                            textInputDecoration.copyWith(hintText: 'Email'),
-                        validator: validateEmail,
-                        onChanged: (val) {
-                          setState(() {
-                            email = val;
-                          });
-                        }),
-                    SizedBox(height: 20.0),
-                    TextFormField(
-                        decoration:
-                            textInputDecoration.copyWith(hintText: 'Password'),
-                        validator: (val) {
-                          return val.length < 6
-                              ? 'Enter a 6+ char password'
-                              : null;
-                        },
-                        obscureText: true,
-                        onChanged: (val) {
-                          setState(() {
-                            password = val;
-                          });
-                        }),
-                    SizedBox(height: 20.0),
-                    RaisedButton(
-                      color: Swatches.myPrimaryRed,
+    {
+      return state.loading
+          ? Loading()
+          : Scaffold(
+          body: SingleChildScrollView(
+            child: Container(
+              height:  MediaQuery.of(context).size.height,
+              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+              child: Form(
+                key: state._formKey,
+                child: Column(children: <Widget>[
+                  Container(
+                    child: Center(
                       child: Text(
-                        "Register",
-                        style: TextStyle(color: Colors.white),
+                        "Sign Up",
+                        style: TextStyle(
+                            fontSize: 35.0, color: Swatches.green1),
+                        textAlign: TextAlign.center,
                       ),
-                      onPressed: () async {
-                        if (_formKey.currentState.validate()) {
-                          setState(() {
-                            loading = true;
-                          });
-                          dynamic result = await _auth
-                              .registerWithEmailAndPssword(email, password);
-                          if (result == null) {
-                            setState(() {
-                              error = "Please supply a valid email";
-                              loading = false;
-                            });
-                          }
-                        }
-                      },
                     ),
-                    SizedBox(height: 12.0),
-                    Text(error,
-                        style: TextStyle(color: Swatches.myPrimaryRed, fontSize: 14.0)),
-                    FlatButton.icon(
-                      onPressed: () {
-                        widget.toggleView();
-                      },
-                      icon: Icon(Icons.person),
-                      label: Text('Sign In'),
-                      color: Swatches.myPrimaryRed,
-                      textColor: Colors.white,
+                    margin: EdgeInsets.all(40.0),
+                    height: 150.0,
+                    width: 150.0,
+                    decoration: BoxDecoration(
+                      color:Colors.white,
+                      shape: BoxShape.circle,
                     ),
-                  ]),
-                ),
+                  ),
+                  SizedBox(height: 20.0),
+                  TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      decoration:
+                      textInputDecoration.copyWith(hintText: 'Email'),
+                      validator: validateEmail,
+                      onChanged: (value) {
+                        state.handleEmailOnChange(value);
+                      }),
+                  SizedBox(height: 20.0),
+                  TextFormField(
+                      decoration:
+                      textInputDecoration.copyWith(hintText: 'Parolă'),
+                      validator: (val) {
+                        return val.length < 6
+                            ? 'Enter a 6+ char password'
+                            : null;
+                      },
+                      obscureText: true,
+                      onChanged: (value) {
+                        state.handlePasswordOnChange(value);
+                      }),
+                  Text(state.error,style: TextStyle(color: Swatches.myPrimaryRed,fontSize: 18,fontStyle: FontStyle.italic),),
+                  SizedBox(height: 20.0),
+                  SizedBox(height: 20.0),
+                  RaisedButton(
+                    color: Swatches.myPrimaryRed,
+                    child: Text(
+                      "Sign Up",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () => state.handleRegisterButtonOnPressed()
+                  ),
+                  SizedBox(height: 12.0),
+                  FlatButton.icon(
+                    onPressed: () {
+                      state.widget.toggleView();
+                    },
+                    icon: Icon(Icons.person),
+                    label: Text('Login'),
+                    color: Swatches.myPrimaryRed,
+                    textColor: Colors.white,
+                  ),
+                ]),
               ),
-            ));
+              decoration: gradientBoxDecoration,
+            ),
+          ));
+    }
   }
+
 }
