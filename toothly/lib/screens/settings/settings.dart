@@ -11,7 +11,7 @@ class SettingsMenu extends StatelessWidget {
       ),
       backgroundColor: Swatches.mySecondaryMint,
       body: Center(
-        child: Text("Set ME"),
+        child: Text("set me"),
       ),
       bottomNavigationBar: bottomBar,
     );
