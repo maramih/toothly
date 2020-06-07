@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:toothly/screens/dashboard/dashboard.dart';
 import 'package:toothly/screens/profile/my_profile.dart';
 import 'package:toothly/screens/settings/settings.dart';
+import 'package:intl/intl.dart';
 import 'colors.dart';
 
-//strings
-const NO_DATA='N/A';
 
 //decorations
 const textInputDecoration = InputDecoration(
@@ -92,7 +91,7 @@ final bottomBar = Container(
             iconSize: iconSize,
             padding: EdgeInsets.symmetric() ,
             onPressed: () {
-              print("Chat pressed");
+              print("Notifications pressed");
             },
           );
         }),new LayoutBuilder(builder: (context, constraint){
@@ -141,4 +140,16 @@ DateTime convertStamp(Timestamp _stamp) {
   } else {
     return null;
   }
+}
+
+
+TimeOfDay stringToTimeOfDay(String tod) {
+  return TimeOfDay(hour:int.parse(tod.split(":")[0]),minute: int.parse(tod.split(":")[1]));
+}
+
+String todToString(TimeOfDay tod){
+  if(tod.minute<10)
+  return tod.hour.toString()+':0'+tod.minute.toString();
+  else
+  return tod.hour.toString()+':'+tod.minute.toString();
 }

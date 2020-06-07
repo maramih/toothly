@@ -1,0 +1,4 @@
+enum ERequestTypes{
+  normal,
+  urgent
+}

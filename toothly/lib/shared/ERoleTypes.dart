@@ -2,7 +2,8 @@ enum ERoleTypes{
   admin,
   doctor,
   client,
-  asistenta
+  asistenta,
+  partener
 }
 
 
