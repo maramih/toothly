@@ -60,8 +60,8 @@ class AuthService {
       FirebaseUser user = result.user;
 
       //create a new document for the user with uid
-      await DatabaseService(uid: user.uid)
-          .updateUserData('N/A', 'N/A', ERoleTypes.client.index, 0);
+     await DatabaseService(uid: user.uid)
+         .updateUserData('N/A', 'N/A', ERoleTypes.client.index, 0);
 
       return _userFromFirebaseUser(user);
     } catch (e) {
@@ -73,6 +73,7 @@ class AuthService {
   //sign in with google account
   Future signInWithGoogle() async {
     try {
+      print("Button pressed2");
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
@@ -80,9 +81,11 @@ class AuthService {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+      print("Button pressed2");
 
       final FirebaseUser user =
           (await _auth.signInWithCredential(credential)).user;
+      print("Button pressed2");
 
       if (user != null) {
         print(user != null);
@@ -91,14 +94,17 @@ class AuthService {
 
 
       var dbs = DatabaseService(uid: user.uid);
-      if (await dbs.verifyUserData==false)
+     // if (await dbs.verifyUserData==false)
+      if(true)
         {
+          user.sendEmailVerification();
           List<String>fullName=user.displayName.split(" ");
           int len=fullName.length-1;
-          dbs.updateUserData(fullName.getRange(0,len).join(" "), fullName[len], ERoleTypes.admin.index, 0);
+          dbs.updateUserData(fullName.getRange(0,len).join(" "), fullName[len], ERoleTypes.client.index, 0);
         }
       return _userFromFirebaseUser(user);
     } catch (e) {
+      print("Button pressed error");
       print(e.toString());
       return null;
     }
