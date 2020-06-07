@@ -23,7 +23,7 @@ class ProfileTile extends StatelessWidget {
           child: ListTile(
             leading: Icon(Icons.contacts),
             title: Text(profile.firstname + ' ' +profile.surname ),
-            subtitle: Text("Role: " +ERoleTypes.values[profile.role].toString() + "\nAge:" + profile.age.toString()),
+            subtitle: Text("Role: " +ERoleTypes.values[profile.role].toString() + "\nAge:" + profile.age.toString())
           ),
         ),
       ),

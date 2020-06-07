@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toothly/models/user.dart';
+import 'package:toothly/screens/dashboard/dashboard_options/appointments/appointments.dart';
 import 'package:toothly/screens/settings/settings_form.dart';
 import 'package:toothly/services/database.dart';
 import 'package:toothly/shared/ERoleTypes.dart';
@@ -22,28 +23,17 @@ class MyProfile extends StatelessWidget {
     w =  MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
 
-
-    void _showSettingsPanel() {
-      showModalBottomSheet(
-          context: context,
-          builder: (context) {
-            return Container(
-//              padding: EdgeInsets.symmetric(
-//                vertical: 20.0,
-//                horizontal: 60.0,
-//              ),
-              child: SettingsForm(),
-            );
-          });
-    }
-
      upBar=AppBar(
-      title: Text('My Profile'),
+      title: Text('Profilul meu'),
       backgroundColor: Swatches.green2.withOpacity(1),
       elevation: 0.0,
       actions: <Widget>[
+        //mockup so i can access the appointments screen
         FlatButton.icon(
-            onPressed: () => _showSettingsPanel(),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AppointmentsScreen()),
+            ),
             icon: Icon(Icons.edit),
             label: Text('Edit')),
       ],
@@ -56,22 +46,23 @@ class MyProfile extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           UserData userData = snapshot.data;
-          return profileAppearance(userData);
-        } else {
-          return Loading();
-        }
+          return Scaffold(
+              appBar: upBar,
+              body: FlatButton.icon(onPressed: () {
+                return Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsForm()));
+              }, icon: Icon(Icons.edit_attributes), label: Text("editForm")),
+            bottomNavigationBar: bottomBar
+          );
+        } else{
+          return Loading();}
       },
     );
-  }
-
-
-  Scaffold profileAppearance (UserData userData){
-    return Scaffold(
-      appBar: upBar,
-      body: SettingsForm() ,
-      bottomNavigationBar: bottomBar,
-    );
-
 
   }
 }
+
+
+
+

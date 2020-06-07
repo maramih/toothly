@@ -12,7 +12,6 @@ class _ProfileList extends State<ProfileList> {
   @override
   Widget build(BuildContext context) {
     final profiles = Provider.of<List<Profile>>(context)??[];
-
     return ListView.builder(
       itemCount: profiles.length,
       itemBuilder: (context, index){
