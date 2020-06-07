@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.5.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -29,7 +29,10 @@ dependencies:
   flutter_spinkit: ^4.1.2
   google_sign_in: ^4.1.4
   firebase_admin: ^0.1.2
+  flutter_chips_input: ^1.8.1
   flutter_form_builder: ^3.10.1
+  table_calendar: ^2.2.3
+  flutter_speed_dial: ^1.2.5
 
 dev_dependencies:
   flutter_test:
