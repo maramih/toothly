@@ -4,9 +4,13 @@ import 'package:toothly/models/user.dart';
 import 'package:toothly/screens/dashboard/menu_option.dart';
 import 'package:toothly/screens/dashboard/menu_option_widget.dart';
 import 'package:toothly/services/database.dart';
+import 'package:toothly/shared/ERoleTypes.dart';
 import 'package:toothly/shared/colors.dart';
 import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
+import 'package:toothly/shared/menuOptionsTypes.dart';
+
+import 'dashboard_options/appointments/appointments.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -14,24 +18,53 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  List<MenuOption> menuOptions;
 
-  List<MenuOption> menuOptions = [
-    MenuOption(
-        iconData: Icons.people_outline,
-        optionText: "Patients",
-        userAccess: [1]),
-    MenuOption(
-        iconData: Icons.calendar_today,
-        optionText: "Appointments",
-        userAccess: [0, 1]),
-    MenuOption(iconData: Icons.people, optionText: "Doctors", userAccess: [0]),
-  ];
+  @override
+  Widget build(BuildContext context) {
+    menuOptions= [
+      option1,
+      option2,
+      option3,
+      option4,
+      option5,
+      option6
+    ];
+   return _DashboardView(this);
+  }
+
+  void _chooseFunction(String option){
+    switch(option){
+      case 'Programări':
+        _handleAppointmentsPressedButton();
+        break;
+      case 'Clinică':
+        print('got here');
+        break;
+      default:
+        break;
+    }
+  }
+  void _handleAppointmentsPressedButton()=>  Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AppointmentsScreen()));
+  List<Widget> _mapOptions(UserData userData){
+    return menuOptions
+        .where((option)=>option.userAccess.contains(userData.role))
+        .map((e) => MenuOptionWidget(option: e,function: ()=> _chooseFunction(e.optionText)))
+        .toList();
+  }
+}
+
+class _DashboardView extends StatelessWidget{
+  final _DashboardState state;
+  const _DashboardView(this.state,{Key key}):super(key:key);
+
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User>(context);
     double w = MediaQuery.of(context).size.width;
-    double h = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +82,7 @@ class _DashboardState extends State<Dashboard> {
                 child: Column(
                   children: <Widget>[
                     _top(userData, w),
-                    gridView(userData),
+                    _gridView(userData),
                   ],
                 ),
                 decoration: gradientBoxDecoration,
@@ -101,17 +134,15 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget gridView(UserData userData) {
+  Widget _gridView(UserData userData) {
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: GridView(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 15),
-            children: menuOptions
-                .where((option)=>option.userAccess.contains(userData.role))
-                .map((e) => MenuOptionWidget(option: e))
-                .toList()),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, crossAxisSpacing: 15),
+          children: state._mapOptions(userData)
+          , ),
       ),
     );
   }
