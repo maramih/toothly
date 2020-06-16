@@ -1,3 +1,5 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_admin/firebase_admin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:toothly/models/user.dart';
@@ -10,6 +12,9 @@ import 'package:toothly/shared/ERoleTypes.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final HttpsCallable updateClaimsCallable=CloudFunctions.instance.getHttpsCallable(
+    functionName: "updateClaims",
+  );
   static bool _signedInWithGoogle = false;
 
 
@@ -40,9 +45,10 @@ class AuthService {
 
   Future signInWithEmailAndPassword(String email, String password) async {
     try {
-      AuthResult result = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      FirebaseUser user = result.user;
+    AuthResult result = await _auth.signInWithEmailAndPassword(
+    email: email, password: password);
+    FirebaseUser user = result.user;
+    print(await user.getIdToken().then((value) => value.token));
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
@@ -58,6 +64,12 @@ class AuthService {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
+
+      //adding a role claim in the db for the new user
+      dynamic response= await updateClaimsCallable.call(<String, dynamic>{
+        'uid': user.uid,
+      });
+      //print("register claims--->"+response.toString());
 
       //create a new document for the user with uid
      await DatabaseService(uid: user.uid)

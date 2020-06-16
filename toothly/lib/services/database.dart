@@ -5,8 +5,12 @@ import 'package:toothly/models/profile.dart';
 import 'package:toothly/models/timeslot.dart';
 import 'package:toothly/models/user.dart';
 import 'package:toothly/models/request.dart';
+import 'package:toothly/shared/ERequestStatus.dart';
 import 'package:toothly/shared/ERoleTypes.dart';
 import 'package:toothly/shared/constants.dart';
+import 'package:intl/intl.dart';
+import 'package:toothly/shared/strings.dart';
+
 
 class DatabaseService {
   final String uid;
@@ -15,11 +19,13 @@ class DatabaseService {
 
   //collection references
   final CollectionReference profileCollection =
-  Firestore.instance.collection('clients');
+      Firestore.instance.collection('clients');
   final CollectionReference appointmentsCollection =
-  Firestore.instance.collection('appointments');
+      Firestore.instance.collection('appointments');
   final CollectionReference timeslotsCollection =
-  Firestore.instance.collection('calendar');
+      Firestore.instance.collection('calendar');
+  final CollectionReference calendarCollection=
+      Firestore.instance.collection('timeslots');
 
 
   //profile list from snapshot
@@ -53,10 +59,31 @@ class DatabaseService {
         licenseNumber: snapshot.data['licenseNumber']);
   }
 
+  List<UserData> _userdataListFromSnapshot(QuerySnapshot snapshot){
+    return snapshot.documents.map((snapshot){
+      return UserData(
+          uid: snapshot.documentID,
+          firstname: snapshot.data['firstname'],
+          surname: snapshot.data['surname'],
+          email: snapshot.data['email'],
+          photoUrl: snapshot.data['photoUrl'],
+          phoneNumber: snapshot.data['phoneNumber'],
+          birthDate: convertStamp(snapshot.data['birthDate']),
+          age: snapshot.data['age'],
+          gender: snapshot.data['gender'],
+          hasAllergies: snapshot.data['hasAllergies'],
+          role: snapshot.data['role'],
+          details: snapshot.data['details'],
+          isAdmin: snapshot.data['isAdmin'],
+          degree: snapshot.data['degree'],
+          licenseNumber: snapshot.data['licenseNumber']);
+    }).toList();
+  }
   //request from snapshot
   List<Request> _requestsListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {
       return Request(
+          rid:doc.documentID,
           clientId: doc.data['client']['id'] ?? '',
           clientName: doc.data['client']['displayName'] ?? '',
           doctorId: doc.data['doctor']['id'] ?? '',
@@ -64,8 +91,7 @@ class DatabaseService {
           date: convertStamp(doc.data['date']),
           startHour: TimeOfDay.now(),
           details: doc.data['clientMessage'] ?? '',
-          state: doc.data['status'] ?? 0,
-          type: doc.data['type'] ?? 0);
+          state: doc.data['status'] ?? 0);
     }).toList();
   }
 
@@ -73,30 +99,42 @@ class DatabaseService {
   List<Timeslot> _timeslotListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {
       return Timeslot(
-          date: convertStamp(doc.data['dateTime']),
-          isActive: doc.data['isActive'] ?? false,
-          availableDoctors: doc.data['available_doctors'] ?? []);
+          date: convertStamp(doc.data['date']),
+          doctorId: doc.data['documentId'],
+          slots: Map<String,int>.from(doc.data['timeslots']??[]));
     }).toList();
   }
 
-
   //get timeslot by day stream
-   Stream<List<Timeslot>>timeslotsByDay(DateTime datetime)  {
-    var queryDate=DateTime(datetime.year,datetime.month,datetime.day);
-      return  timeslotsCollection
-        .where('dateTime',isGreaterThanOrEqualTo:queryDate)
-        .where('dateTime',isLessThan: queryDate.add(Duration(days: 1)))
+  Stream<List<Timeslot>> timeslotsByDay(DateTime datetime) {
+    var queryDate = DateTime(datetime.year, datetime.month, datetime.day);
+    return timeslotsCollection
+        .where('dateTime', isGreaterThanOrEqualTo: queryDate)
+        .where('dateTime', isLessThan: queryDate.add(Duration(days: 1)))
         .snapshots()
-        .map((value) => _timeslotListFromSnapshot(value))
-
-      ;
+        .map((value) => _timeslotListFromSnapshot(value));
   }
+  //get timeslot by day stream
+  Stream<List<Timeslot>> timeslotsByDoctor(String doctorId) {
+    return calendarCollection
+        .where('doctorId', isEqualTo: doctorId)
+        .snapshots()
+        .map(_timeslotListFromSnapshot);
+  }
+
+  //get profiles stream
+  Stream<List<Profile>> getProfilesByType(ERoleTypes type) {
+    return profileCollection
+    .where('role',isEqualTo: type.index)
+        .snapshots()
+        .map(_profileListFromSnapshot);
+  }
+
 
   //get timeslots stream
   Stream<List<Timeslot>> get timeslots {
     return timeslotsCollection.snapshots().map(_timeslotListFromSnapshot);
   }
-
 
   //get profiles stream
   Stream<List<Profile>> get profiles {
@@ -116,9 +154,15 @@ class DatabaseService {
         .map(_userDataFromSnapshot);
   }
 
+  //get doctors
+  Stream<List<UserData>> get doctors{
+    return profileCollection.where('role',isEqualTo: ERoleTypes.doctor.index).snapshots().map(_userdataListFromSnapshot);
+  }
+
+
   //updating user's data in profile collection
-  Future updateUserData(String firstName, String surname, int role,
-      int age) async {
+  Future updateUserData(
+      String firstName, String surname, int role, int age) async {
     return await profileCollection.document(uid).setData({
       'firstname': firstName,
       'surname': surname,
@@ -132,25 +176,114 @@ class DatabaseService {
 
   //update available dates
   Future updateAvailableDate(String dateTime, bool isActive) async {
-    return await timeslotsCollection.document(dateTime).setData(
-        {
-          'isActive': isActive,
-        }
-    );
+    return await timeslotsCollection.document(dateTime).updateData({
+      'isActive': isActive,
+    });
   }
+  //update request status
+  Future updateRequestStatus(String rid, int status) async {
+    return await appointmentsCollection.document(rid).updateData({
+      'status': status,
+    });
+  }
+
+  //create timeslot
+  Future createTimeslot(
+      DateTime dateTime, bool isActive, List<String> doctors) async {
+    return await timeslotsCollection.document(dateTime.toString()).setData({
+      'dateTime': dateTime,
+      'isActive': isActive,
+      'availableDoctors': doctors
+    });
+  }
+
+  //create doctor available timeslots
+  Future createDoctorTimeslots(String doctorId, Map<String,int> timeslots) async {
+    var day= timeslots.keys.elementAt(0);
+    DateTime convert=DateTime.parse(day);
+    DateTime dayTimeslot=DateTime(convert.year,convert.month,convert.day,0);
+    var documentId=doctorId+'_'+dayTimeslot.toString();
+    timeslots.forEach((key, value) async {
+      return await calendarCollection.document(documentId).setData({
+        'doctorId':doctorId,
+        'date': dayTimeslot,
+        'timeslots': timeslots
+      }).catchError((error)=>print(error));
+    });
+
+  }
+
   //update available dates
-  Future updateTimeslot(DateTime dateTime, bool isActive,List<String> doctors) async {
-    return await timeslotsCollection.document(dateTime.toString()).setData(
-        {
-          'dateTime': dateTime,
-          'isActive': isActive,
-          'availableDoctors': doctors
-        }
-    );
+  Future createRequest(Map<String, dynamic> reqMap) async {
+    String docId=reqMap['doctorId'].toString()+"_"+reqMap['date'].toString();
+    DateTime date=await getTime(docId, reqMap['period']);
+    return await appointmentsCollection.document().setData({
+      'client': {
+        'displayName': reqMap['clientName'],
+        'id': reqMap['clientId'],
+      },
+      'doctor': {
+        'displayName': reqMap['doctorName'],
+        'id': reqMap['doctorId'],
+      },
+      'date': date,
+      'details': reqMap['details'],
+      'status': 0,
+    });
   }
 
+  Future _updateTimeslot(String docId,result) async{
+    return await calendarCollection
+        .document(docId).updateData({
+      'timeslots': result
+    });
+  }
 
+  Future getTime(String docId,String period)async{
+    var result = await calendarCollection
+        .document(docId)
+        .get()
+        .then((document) => document['timeslots'])
+        .catchError((error) =>print(error.toString()));
+    if(result!=null){
+      var options=_getTimeSlotsByPeriod(result,period);
+      var timeslotKey=options.keys.elementAt(0);
+      result[timeslotKey]=ETimeslotStatus.PENDING.index;
+      _updateTimeslot(docId, result);
+      return DateTime.parse(timeslotKey);
+    }
+  }
 
+  Map _getTimeSlotsByPeriod(Map timeslots,String period)
+  {
+    Map values={};
+    switch(period){
+      case MORNING:
+        timeslots.forEach((key, value) {
+          DateTime day=DateTime.parse(key);
+          if(day.hour>=START_MORNING&&day.hour<END_MORNING&&value==ETimeslotStatus.FREE.index)
+            values[key]=value;
+        });
+        break;
+      case AFTERNOON:
+        timeslots.forEach((key, value) {
+          DateTime day=DateTime.parse(key);
+          if(day.hour>=END_MORNING&&day.hour<END_AFTERNOON&&value==ETimeslotStatus.FREE.index)
+            values[key]=value;
+        });
+        break;
+      case EVENING:
+        timeslots.forEach((key, value) {
+          DateTime day=DateTime.parse(key);
+          if(day.hour>=END_AFTERNOON&&day.hour<END_EVENING&&value==ETimeslotStatus.FREE.index)
+            values[key]=value;
+        });
+        break;
+      default:
+        break;
+    }
+    return values;
+  }
 
   //verify userData for providers
   Future<bool> get verifyUserData async {

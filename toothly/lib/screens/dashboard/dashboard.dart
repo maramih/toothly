@@ -9,6 +9,8 @@ import 'package:toothly/shared/colors.dart';
 import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
 import 'package:toothly/shared/menuOptionsTypes.dart';
+import 'package:toothly/screens/dashboard/dashboard_options/users_lists/clients_list.dart';
+import 'package:toothly/shared/strings.dart';
 
 import 'dashboard_options/appointments/appointments.dart';
 
@@ -35,24 +37,37 @@ class _DashboardState extends State<Dashboard> {
 
   void _chooseFunction(String option){
     switch(option){
-      case 'Programări':
+      case APPOINTMENTS:
         _handleAppointmentsPressedButton();
         break;
-      case 'Clinică':
-        print('got here');
+      case CLINIC:
+        print(CLINIC);
+        break;
+      case EMPLOYEES:
+        print(EMPLOYEES);
+        break;
+      case CLIENTS:
+        _handlePatientListPressedButton();
         break;
       default:
         break;
     }
   }
+
+  void _handlePatientListPressedButton()=>  Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ClientList(ERoleTypes.client)));
+
   void _handleAppointmentsPressedButton()=>  Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AppointmentsScreen()));
+
   List<Widget> _mapOptions(UserData userData){
-    return menuOptions
-        .where((option)=>option.userAccess.contains(userData.role))
-        .map((e) => MenuOptionWidget(option: e,function: ()=> _chooseFunction(e.optionText)))
-        .toList();
+        return menuOptions
+            .where((option)=>option.userAccess.contains(userData.role))
+            .map((element) => MenuOptionWidget(option: element,function: ()=> _chooseFunction(element.optionText)))
+            .toList();
+
   }
 }
 
@@ -71,7 +86,7 @@ class _DashboardView extends StatelessWidget{
         centerTitle: true,
         title: Text("Dashboard"),
         backgroundColor: Swatches.green2.withOpacity(1),
-        elevation: 0.0,
+        elevation: 0.0
       ),
       body: StreamBuilder<UserData>(
           stream: DatabaseService(uid: user.uid).userData,
@@ -82,6 +97,23 @@ class _DashboardView extends StatelessWidget{
                 child: Column(
                   children: <Widget>[
                     _top(userData, w),
+                    if(userData.isAdmin==true)
+                    FlatButton.icon(
+                        onPressed: () async {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context){
+                                return AlertDialog(
+                                  title: Text("ADMIN SIDE"),
+                                );
+                              }
+                          );
+                        },
+                        icon: Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        ),
+                        label: Text('Admin Side')),
                     _gridView(userData),
                   ],
                 ),

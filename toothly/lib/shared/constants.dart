@@ -48,6 +48,36 @@ const gradientBoxDecoration=BoxDecoration(
   ),
 );
 
+//
+final rowForEventTileEdits = Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: <Widget>[
+    FlatButton.icon(
+      onPressed: () => print(""),
+      icon: Icon(
+        Icons.call,
+        color: Swatches.green1,
+      ),
+      label: Text(''),
+    ),
+    FlatButton.icon(
+      onPressed: () => print(""),
+      icon: Icon(Icons.message, color: Swatches.green1),
+      label: Text(''),
+    ),
+    FlatButton.icon(
+      onPressed: () => print(""),
+      icon: Icon(Icons.edit, color: Swatches.green1),
+      label: Text(''),
+    ),
+    FlatButton.icon(
+      onPressed: () => print(""),
+      icon: Icon(Icons.delete, color: Swatches.green1),
+      label: Text(''),
+    )
+  ],
+);
+
 //bottom bar for Scaffold widget
 const double iconSize=40;
 final bottomBar = Container(
@@ -147,7 +177,7 @@ TimeOfDay stringToTimeOfDay(String tod) {
   return TimeOfDay(hour:int.parse(tod.split(":")[0]),minute: int.parse(tod.split(":")[1]));
 }
 
-String todToString(TimeOfDay tod){
+String todToString(dynamic tod){
   if(tod.minute<10)
   return tod.hour.toString()+':0'+tod.minute.toString();
   else
