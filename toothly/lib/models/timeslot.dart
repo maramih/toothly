@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class Timeslot{
   DateTime date;
-  bool isActive;
-  List<String> availableDoctors=[];
+  String doctorId;
+  Map<String,int> slots;
 
-  Timeslot({this.date, this.isActive, this.availableDoctors});
+  Timeslot({this.date, this.doctorId, this.slots});
+
 
 }

@@ -3,8 +3,10 @@ import 'package:toothly/shared/ERoleTypes.dart';
 class User{
 
   final String uid;
+  //final int role;
 
   User({this.uid});
+  //User({this.uid,this.role});
 }
 
 class UserData{
