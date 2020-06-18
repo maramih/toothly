@@ -1,3 +1,4 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -211,6 +212,9 @@ class _SettingsFormState extends State<SettingsForm> {
                                         userData.role,
                                         _currentAge ?? userData.age);
                                 Navigator.pop(context);
+                                Flushbar(title:  "UPDATE",
+                                  message:  "Profil actualizat ",
+                                  duration:  Duration(seconds: 3),    )..show(context);
                               }
                             }),
                       ],

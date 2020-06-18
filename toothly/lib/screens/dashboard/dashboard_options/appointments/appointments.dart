@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -12,7 +13,7 @@ import 'package:toothly/shared/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:toothly/shared/loading.dart';
 import 'package:toothly/shared/constants.dart';
-import 'package:toothly/shared/strings.dart';
+import 'package:toothly/shared/environment_variables.dart';
 import'package:toothly/screens/dashboard/dashboard_options/appointments/timeslot_form.dart';
 
 import 'appointment_form.dart';
@@ -27,7 +28,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   List<dynamic> _selectedEvents;
   DateTime _selectedDay = DateTime.now();
   ERequestStatus group = ERequestStatus.REQUESTED;
-  var _initialValue;
+  var _initialDoctorValue;
 
   @override
   void initState() {
@@ -49,6 +50,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       body:  Container(
                 child: Column(
                   children: <Widget>[
+                    SizedBox(height: 10.0,),
+                    Text(SELECT_DOCTOR,style: TextStyle(fontSize: 20.0,color: Colors.white,fontWeight: FontWeight.bold),),
                     SizedBox(height: 20.0,),
                     //dropdown for choosing the doctor in order to show his available timeslots
                     StreamBuilder<List<UserData>>(
@@ -60,7 +63,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             child: Text("Dr. "+doctor.surname+" "+doctor.firstname),
                           )).toList();
                           if(_doctorList.isNotEmpty)
-                            _initialValue=_doctorList[0].value;
+                            _initialDoctorValue=_doctorList[0].value;
                           return DropdownButtonFormField(
                               style: TextStyle(fontSize: 20.0,color: Colors.black),
                               decoration: textInputDecorationEdit.copyWith(
@@ -70,10 +73,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                               items: [
                                 ..._doctorList
                               ],
-                              value:_initialValue,
+                              value:_initialDoctorValue,
                               onChanged: (value) {
                                 setState(() {
-                                  _initialValue = value;
+                                  _initialDoctorValue = value;
                                 });
                               });
                         }
@@ -83,53 +86,23 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                     ),
                     SizedBox(height: 20.0,),
                     //calendar
-                    if(_initialValue!=null)
-                    AppointmentsCalendar(_initialValue),
+                    if(_initialDoctorValue!=null)
+                    AppointmentsCalendar(_initialDoctorValue),
                     //lista evenimente
 //
                   ],
                 ),
                 decoration: gradientBoxDecoration,
               ),
-      floatingActionButton: SpeedDial(
-        animatedIcon: AnimatedIcons.event_add,
-        backgroundColor: Swatches.myPrimaryRed,
-        children: [
-          //formular timelsot
-          SpeedDialChild(
-              label: "Formular timeslot",
-              child: Icon(Icons.av_timer),
-              backgroundColor: Swatches.myPrimaryRed,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => TimeslotForm()),
-              )),
-          //formular programare
-          SpeedDialChild(
-              label: "Formular programare",
-              child: Icon(Icons.add),
-              backgroundColor: Swatches.myPrimaryRed,
-              onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AppointmentForm(
-                              currentDay: _selectedDay.isBefore(DateTime.now())
-                                  ? DateTime.now()
-                                  : _selectedDay,
-                            )),
-                  ))
-        ],
-      ),
       bottomNavigationBar: bottomBar,
     );
   }
 }
 
 class AppointmentsCalendar extends StatefulWidget {
-  final UserData _initialValue;
+  final UserData _initialDoctorValue;
 
-  AppointmentsCalendar(this._initialValue);
+  AppointmentsCalendar(this._initialDoctorValue);
 
   @override
   _AppointmentsCalendarState createState() => _AppointmentsCalendarState();
@@ -141,7 +114,6 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
   Map<DateTime, List<dynamic>> _events;
   List<dynamic> _selectedEvents;
   DateTime _selectedDay = DateTime.now();
-  ERequestStatus group = ERequestStatus.REQUESTED;
   bool enable=true;
 
   @override
@@ -173,7 +145,8 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
       EVENING:0
     };
     slots.forEach((key, value) {
-      DateTime date=DateTime.parse(key);
+      //DateTime date=convertStamp(Timestamp.fromMillisecondsSinceEpoch(int.parse(key)));
+      DateTime date=DateTime.fromMillisecondsSinceEpoch(int.parse(key));
       if(date.hour>=8 && date.hour<12&&value==0)
         periods[MORNING]++;
       else if (date.hour>=12 && date.hour<16&&value==0)
@@ -188,7 +161,7 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
   Widget build(BuildContext context) {
     enable=true;
    return StreamBuilder<List<Timeslot>>(
-        stream: DatabaseService().timeslotsByDoctor(widget._initialValue.uid),
+        stream: DatabaseService().timeslotsByDoctor(widget._initialDoctorValue.uid),
         builder: (context, snapshot) {
           if(snapshot.hasData){
             List<Timeslot> allTimeslots=snapshot.data;
@@ -246,8 +219,6 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
                 ListView(
                   shrinkWrap: true,
                   children: <Widget>[
-//                    Text(_selectedEvents.first.length.toString() +
-//                        "inter"),
                     ...?_selectedEvents.map((event) {
                      // var status = ERequestStatus.values[event.state];
                       return Container(
@@ -272,7 +243,7 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
                                                 currentDay: _selectedDay.isBefore(DateTime.now())
                                                     ? DateTime.now()
                                                     : _selectedDay,
-                                                currentDoctor: widget._initialValue,
+                                                currentDoctor: widget._initialDoctorValue,
                                                 period: event
                                             )));
                                   });
@@ -290,7 +261,9 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
             );
           }
           else
-            return Container();
+            return Container(
+              child: Text("NO DATA"),
+            );
         }
     );
   }

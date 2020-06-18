@@ -9,7 +9,7 @@ import 'package:toothly/shared/ERequestStatus.dart';
 import 'package:toothly/shared/ERoleTypes.dart';
 import 'package:toothly/shared/constants.dart';
 import 'package:intl/intl.dart';
-import 'package:toothly/shared/strings.dart';
+import 'package:toothly/shared/environment_variables.dart';
 
 
 class DatabaseService {
@@ -84,10 +84,10 @@ class DatabaseService {
     return snapshot.documents.map((doc) {
       return Request(
           rid:doc.documentID,
-          clientId: doc.data['client']['id'] ?? '',
-          clientName: doc.data['client']['displayName'] ?? '',
-          doctorId: doc.data['doctor']['id'] ?? '',
-          doctorName: doc.data['doctor']['displayName'] ?? '',
+          clientId: doc.data['clientId'] ?? '',
+          clientName: doc.data['clientName'] ?? '',
+          doctorId: doc.data['doctorId'] ?? '',
+          doctorName: doc.data['doctorName'] ?? '',
           date: convertStamp(doc.data['date']),
           startHour: TimeOfDay.now(),
           details: doc.data['clientMessage'] ?? '',
@@ -145,6 +145,13 @@ class DatabaseService {
   Stream<List<Request>> get appointments {
     return appointmentsCollection.snapshots().map(_requestsListFromSnapshot);
   }
+  
+  //get appointments by uid stream
+  Stream<List<Request>> appointmentsByUser(String uid) {
+    return appointmentsCollection
+        .where('clientId',isEqualTo: uid)
+        .snapshots().map(_requestsListFromSnapshot);
+  }
 
   //get user doc stream
   Stream<UserData> get userData {
@@ -199,8 +206,8 @@ class DatabaseService {
 
   //create doctor available timeslots
   Future createDoctorTimeslots(String doctorId, Map<String,int> timeslots) async {
-    var day= timeslots.keys.elementAt(0);
-    DateTime convert=DateTime.parse(day);
+    var day= int.parse(timeslots.keys.elementAt(0));
+    DateTime convert=DateTime.fromMillisecondsSinceEpoch(day);
     DateTime dayTimeslot=DateTime(convert.year,convert.month,convert.day,0);
     var documentId=doctorId+'_'+dayTimeslot.toString();
     timeslots.forEach((key, value) async {
@@ -216,30 +223,26 @@ class DatabaseService {
   //update available dates
   Future createRequest(Map<String, dynamic> reqMap) async {
     String docId=reqMap['doctorId'].toString()+"_"+reqMap['date'].toString();
-    DateTime date=await getTime(docId, reqMap['period']);
+    DateTime date=await _getTime(docId, reqMap['period']);
     return await appointmentsCollection.document().setData({
-      'client': {
-        'displayName': reqMap['clientName'],
-        'id': reqMap['clientId'],
-      },
-      'doctor': {
-        'displayName': reqMap['doctorName'],
-        'id': reqMap['doctorId'],
-      },
+      'clientName': reqMap['clientName'],
+      'clientId': reqMap['clientId'],
+      'doctorName': reqMap['doctorName'],
+      'doctorId': reqMap['doctorId'],
       'date': date,
       'details': reqMap['details'],
       'status': 0,
     });
   }
 
-  Future _updateTimeslot(String docId,result) async{
+  Future _updateTimeslot(String docId,DateTime result) async{
     return await calendarCollection
         .document(docId).updateData({
-      'timeslots': result
+      'timeslots.${result.millisecondsSinceEpoch.toString()}': ETimeslotStatus.PENDING.index
     });
   }
 
-  Future getTime(String docId,String period)async{
+  Future _getTime(String docId,String period)async{
     var result = await calendarCollection
         .document(docId)
         .get()
@@ -247,10 +250,10 @@ class DatabaseService {
         .catchError((error) =>print(error.toString()));
     if(result!=null){
       var options=_getTimeSlotsByPeriod(result,period);
-      var timeslotKey=options.keys.elementAt(0);
-      result[timeslotKey]=ETimeslotStatus.PENDING.index;
-      _updateTimeslot(docId, result);
-      return DateTime.parse(timeslotKey);
+      DateTime timeslotKey=DateTime.fromMillisecondsSinceEpoch(int.parse(options.keys.elementAt(0)));
+      //result[timeslotKey]=ETimeslotStatus.PENDING.index;
+      _updateTimeslot(docId, timeslotKey);
+      return timeslotKey;
     }
   }
 
@@ -260,21 +263,21 @@ class DatabaseService {
     switch(period){
       case MORNING:
         timeslots.forEach((key, value) {
-          DateTime day=DateTime.parse(key);
+          DateTime day=DateTime.fromMillisecondsSinceEpoch(int.parse(key));
           if(day.hour>=START_MORNING&&day.hour<END_MORNING&&value==ETimeslotStatus.FREE.index)
             values[key]=value;
         });
         break;
       case AFTERNOON:
         timeslots.forEach((key, value) {
-          DateTime day=DateTime.parse(key);
+          DateTime day=DateTime.fromMillisecondsSinceEpoch(int.parse(key));
           if(day.hour>=END_MORNING&&day.hour<END_AFTERNOON&&value==ETimeslotStatus.FREE.index)
             values[key]=value;
         });
         break;
       case EVENING:
         timeslots.forEach((key, value) {
-          DateTime day=DateTime.parse(key);
+          DateTime day=DateTime.fromMillisecondsSinceEpoch(int.parse(key));
           if(day.hour>=END_AFTERNOON&&day.hour<END_EVENING&&value==ETimeslotStatus.FREE.index)
             values[key]=value;
         });

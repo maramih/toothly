@@ -5,7 +5,7 @@ import 'package:toothly/screens/authenticate/authenticate.dart';
 import 'package:toothly/screens/home/home.dart';
 import 'package:toothly/screens/profile/my_profile.dart';
 import 'package:toothly/services/database.dart';
-import 'package:toothly/shared/strings.dart';
+import 'package:toothly/shared/environment_variables.dart';
 
 class Wrapper extends StatelessWidget {
   @override

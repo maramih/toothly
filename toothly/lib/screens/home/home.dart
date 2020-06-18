@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/models/profile.dart';
+import 'package:toothly/models/timeslot.dart';
+import 'package:toothly/models/user.dart';
 import 'package:toothly/shared/constants.dart';
 import '../profile/components/profile_list.dart';
 import 'package:toothly/services/auth.dart';
@@ -7,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:toothly/services/database.dart';
 import 'package:toothly/shared/colors.dart';
 
+
+//adauga controller
 class Home extends StatelessWidget {
   final AuthService _auth = AuthService();
   final double iconSize = 40;
@@ -32,13 +36,32 @@ class Home extends StatelessWidget {
       ],
     );
 
-    return StreamProvider<List<Profile>>.value(
-      value: DatabaseService().profiles,
-      child: Scaffold(
+    return MultiProvider(
+      providers: [
+        StreamProvider<UserData>.value(value: DatabaseService().userData),
+        StreamProvider<List<Profile>>.value(value: DatabaseService().profiles),
+
+//        StreamProvider<DateTime>.value(value: DatabaseService().availableDates),
+//        StreamProvider<List<Timeslot>>.value(value: DatabaseService().timeslots)
+      ],
+      child:Scaffold(
         backgroundColor: Swatches.green2.withOpacity(1),
         appBar: upperBar,
         body:
-            Container(decoration: gradientBoxDecoration, child: ProfileList()),
+        Container(decoration: gradientBoxDecoration, child: InkWell(
+            onTap:(){
+              var doctorId= "7bmKq9n9fmVUpm9pyQGNtlFRccv2";
+              Map<String,int> timeslots={
+                DateTime(2020,7,10,9).millisecondsSinceEpoch.toString(): 0,
+                DateTime(2020,7,10,10).millisecondsSinceEpoch.toString(): 0,
+                DateTime(2020,7,10,11).millisecondsSinceEpoch.toString(): 0,
+                DateTime(2020,7,10,12).millisecondsSinceEpoch.toString(): 0,
+                DateTime(2020,7,10,14).millisecondsSinceEpoch.toString(): 0,
+                DateTime(2020,7,10,18).millisecondsSinceEpoch.toString(): 0,
+              };
+              DatabaseService().createDoctorTimeslots(doctorId, timeslots);
+            } ,
+            child: ProfileList())),
         bottomNavigationBar: bottomBar,
       ),
     );

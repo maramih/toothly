@@ -11,7 +11,7 @@ class SettingsMenu extends StatelessWidget {
       ),
       backgroundColor: Swatches.mySecondaryMint,
       body: Center(
-        child: Text("set me"),
+        child: Text("LogOut\nPrivacyPolicy\nAbout the clinic\nChange password\nPermissions"),
       ),
       bottomNavigationBar: bottomBar,
     );

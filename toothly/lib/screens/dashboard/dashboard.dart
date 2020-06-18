@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toothly/models/user.dart';
+import 'package:toothly/screens/dashboard/dashboard_options/appointments/appointments_calendar_events.dart';
 import 'package:toothly/screens/dashboard/menu_option.dart';
 import 'package:toothly/screens/dashboard/menu_option_widget.dart';
 import 'package:toothly/services/database.dart';
@@ -10,7 +11,7 @@ import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
 import 'package:toothly/shared/menuOptionsTypes.dart';
 import 'package:toothly/screens/dashboard/dashboard_options/users_lists/clients_list.dart';
-import 'package:toothly/shared/strings.dart';
+import 'package:toothly/shared/environment_variables.dart';
 
 import 'dashboard_options/appointments/appointments.dart';
 
@@ -21,27 +22,30 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   List<MenuOption> menuOptions;
+  User user;
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of<User>(context);
     menuOptions= [
-      option1,
+      option_appointments,
       option2,
+      option1,
       option3,
       option4,
       option5,
-      option6
+      option_admin_calendar
     ];
    return _DashboardView(this);
   }
 
   void _chooseFunction(String option){
     switch(option){
-      case APPOINTMENTS:
-        _handleAppointmentsPressedButton();
+      case CALENDAR:
+        _handleCreateAppointmentPressedButton();
         break;
-      case CLINIC:
-        print(CLINIC);
+      case APPOINTMENTS:
+        _handleViewAppointmentPressedButton();
         break;
       case EMPLOYEES:
         print(EMPLOYEES);
@@ -49,6 +53,7 @@ class _DashboardState extends State<Dashboard> {
       case CLIENTS:
         _handlePatientListPressedButton();
         break;
+
       default:
         break;
     }
@@ -58,9 +63,13 @@ class _DashboardState extends State<Dashboard> {
       context,
       MaterialPageRoute(builder: (context) => ClientList(ERoleTypes.client)));
 
-  void _handleAppointmentsPressedButton()=>  Navigator.push(
+  void _handleCreateAppointmentPressedButton()=>  Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AppointmentsScreen()));
+
+  void _handleViewAppointmentPressedButton() => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AppointmentsCalendarEvents(uid: user.uid,)));
 
   List<Widget> _mapOptions(UserData userData){
         return menuOptions
@@ -69,6 +78,7 @@ class _DashboardState extends State<Dashboard> {
             .toList();
 
   }
+
 }
 
 class _DashboardView extends StatelessWidget{
@@ -84,7 +94,7 @@ class _DashboardView extends StatelessWidget{
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Dashboard"),
+        title: Text(DASHBOARD),
         backgroundColor: Swatches.green2.withOpacity(1),
         elevation: 0.0
       ),
@@ -97,7 +107,8 @@ class _DashboardView extends StatelessWidget{
                 child: Column(
                   children: <Widget>[
                     _top(userData, w),
-                    if(userData.isAdmin==true)
+                   // if(userData.isAdmin==true)
+                    if(userData.role==ERoleTypes.doctor.index)
                     FlatButton.icon(
                         onPressed: () async {
                           showDialog(
@@ -111,9 +122,9 @@ class _DashboardView extends StatelessWidget{
                         },
                         icon: Icon(
                           Icons.person,
-                          color: Colors.white,
+                          color: Swatches.myPrimaryRed,
                         ),
-                        label: Text('Admin Side')),
+                        label: Text('Admin Side',style: TextStyle(color: Swatches.myPrimaryRed),),color: Colors.white),
                     _gridView(userData),
                   ],
                 ),
@@ -147,7 +158,7 @@ class _DashboardView extends StatelessWidget{
                       SizedBox(width: 20.0),
                       Container(
                         child: Text(
-                          "Welcome, " + userData.firstname.split(" ")[0] + "!",
+                          HELLO+", " + userData.firstname.split(" ")[0] + "!",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.white,

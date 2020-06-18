@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/screens/dashboard/menu_option.dart';
-import 'package:toothly/shared/strings.dart';
+import 'package:toothly/shared/environment_variables.dart';
 
 import 'ERoleTypes.dart';
 
@@ -16,7 +16,7 @@ final option1 = MenuOption(
 
 final option2 = MenuOption(
   iconData: Icons.calendar_today,
-  optionText: APPOINTMENTS,
+  optionText: CALENDAR,
   userAccess: [
     ERoleTypes.asistenta.index,
     ERoleTypes.doctor.index,
@@ -49,9 +49,16 @@ final option5 = MenuOption(
       ERoleTypes.doctor.index
     ]);
 
-final option6 = MenuOption(
+final option_admin_calendar = MenuOption(
     iconData: Icons.calendar_view_day,
     optionText: ADMIN_CALENDAR,
+    userAccess: [
+      ERoleTypes.admin.index,
+    ]);
+
+final option_appointments = MenuOption(
+    iconData: Icons.calendar_view_day,
+    optionText: APPOINTMENTS,
     userAccess: [
       ERoleTypes.admin.index,
       ERoleTypes.doctor.index
