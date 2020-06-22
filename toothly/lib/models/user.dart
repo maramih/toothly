@@ -1,14 +1,18 @@
-import 'package:toothly/shared/ERoleTypes.dart';
+import 'package:toothly/services/auth.dart';
 
-class User{
+class User {
 
   final String uid;
-  final String role;
+  String role;
 
-  User({this.uid,this.role});
-  //User({this.uid,this.role});
+  User({this.uid}) {
+    _getRole();
+  }
+
+  _getRole() async {
+    this.role = await AuthService().currentRole;
+  }
 }
-
 class UserData{
 
   final String uid;
@@ -23,13 +27,12 @@ class UserData{
   bool hasAllergies;
   int role;
   String details;
-  bool isAdmin;
   String degree;
   String licenseNumber;
 
   UserData({this.uid, this.firstname, this.surname, this.email, this.photoUrl,
       this.phoneNumber, this.birthDate, this.age, this.gender,
-      this.hasAllergies, this.role, this.details, this.isAdmin,this.degree,this.licenseNumber});
+      this.hasAllergies, this.role, this.details, this.degree,this.licenseNumber});
 
 
 

@@ -32,7 +32,7 @@ final option3 = MenuOption(iconData: Icons.people,
       ERoleTypes.doctor.index
     ])
 ;
-final option4 = MenuOption(
+final option_clinic = MenuOption(
     iconData: Icons.loupe,
     optionText: CLINIC,
     userAccess: [
