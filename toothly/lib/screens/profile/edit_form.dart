@@ -10,12 +10,12 @@ import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
 import 'package:intl/intl.dart';
 
-class SettingsForm extends StatefulWidget {
+class EditForm extends StatefulWidget {
   @override
-  _SettingsFormState createState() => _SettingsFormState();
+  _EditFormState createState() => _EditFormState();
 }
 
-class _SettingsFormState extends State<SettingsForm> {
+class _EditFormState extends State<EditForm> {
   final GlobalKey<FormBuilderState> _formKey =
       new GlobalKey<FormBuilderState>();
   bool editFlag = false;
@@ -29,6 +29,13 @@ class _SettingsFormState extends State<SettingsForm> {
   DateTime _currentBirthDate;
   bool _currentIsAllergic;
   String _currentDetails;
+  Map<String,dynamic> reqMap;
+
+  @override
+  void initState() {
+    super.initState();
+    reqMap=Map<String,dynamic>();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,12 +56,12 @@ class _SettingsFormState extends State<SettingsForm> {
             ),
             body: SingleChildScrollView(
               child: Container(
+                height: MediaQuery.of(context).size.height,
                 child: FormBuilder(
                   key: _formKey,
                   initialValue: {
                     'prenume': userData.firstname,
                     'nume': userData.surname,
-                    'gender':'F'
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -67,26 +74,6 @@ class _SettingsFormState extends State<SettingsForm> {
                             style: TextStyle(fontSize: 12.0,fontStyle: FontStyle.italic),
                           ),
                         ),
-                        SizedBox(height: 20.0),
-                        CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 45,
-                          child: CircleAvatar(
-                            backgroundImage: AssetImage('images/avatar.png'),
-                            radius: 40,
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        //update photo button
-                        RaisedButton(
-                            color: Colors.redAccent,
-                            child: Text(
-                              "Choose photo",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            onPressed: () async {
-                              print("Choose photo");
-                            }),
                         SizedBox(height: 20.0),
                         //First name
                         FormBuilderTextField(
@@ -137,14 +124,15 @@ class _SettingsFormState extends State<SettingsForm> {
                         FormBuilderTextField(
                           style: TextStyle(fontSize: 20.0),
                           attribute: "phoneNumber",
+                          initialValue: userData.phoneNumber,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             WhitelistingTextInputFormatter.digitsOnly,
                           ],
                           validators: [
                             FormBuilderValidators.required(),
-                            FormBuilderValidators.minLength(10),
-                            FormBuilderValidators.maxLength(10)
+                            FormBuilderValidators.minLength(10,errorText: "Minim 10 cifre"),
+                            FormBuilderValidators.maxLength(10,errorText: "maxim 10 cifre")
                           ],
                           onChanged: (value) =>
                               setState(() => _currentPhoneNumber = value),
@@ -157,11 +145,11 @@ class _SettingsFormState extends State<SettingsForm> {
                           style: TextStyle(fontSize: 20.0),
                           attribute: "gender",
                           decoration: textInputDecorationEdit.copyWith(
-                              labelText: 'Gen*:'),
+                              labelText: 'Sex*:'),
                           // initialValue: 'Male',
                           hint: Text('Selectează gen'),
                           validators: [FormBuilderValidators.required()],
-                          items: ['M', 'F', 'Other']
+                          items: ['M', 'F', 'Altceva']
                               .map((gender) => DropdownMenuItem(
                                   value: gender,
                                   child: Text(
@@ -169,6 +157,7 @@ class _SettingsFormState extends State<SettingsForm> {
                                     style: TextStyle(color: Colors.black),
                                   )))
                               .toList(),
+                          initialValue: userData.gender,
                           onChanged: (value) =>
                               setState(() => _currentGender = value),
                         ),
@@ -178,8 +167,9 @@ class _SettingsFormState extends State<SettingsForm> {
                           attribute: 'isAllergic',
                           label: Text(
                               "Sunteți alergic?",style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
-                          activeColor:Swatches.myPrimaryRed ,
+                          activeColor:Swatches.myPrimaryBlue ,
                           onChanged:(value) => _currentIsAllergic = value ,
+                          initialValue: userData.hasAllergies,
                           decoration: textInputDecorationEdit ,
                         ),
                         SizedBox(height: 20.0),
@@ -190,6 +180,7 @@ class _SettingsFormState extends State<SettingsForm> {
                           validators: [
                             FormBuilderValidators.maxLength(200)
                           ],
+                          initialValue: userData.details,
                           onChanged: (value) =>
                               setState(() => _currentDetails = value),
                           decoration: textInputDecorationEdit.copyWith(
@@ -198,23 +189,29 @@ class _SettingsFormState extends State<SettingsForm> {
                         SizedBox(height: 20.0),
                         //update button
                         RaisedButton(
-                            color: Colors.redAccent,
+                            color: Swatches.myPrimaryBlue,
                             child: Text(
                               "Update",
                               style: TextStyle(color: Colors.white),
                             ),
                             onPressed: () async {
+                              reqMap.putIfAbsent('uid', () => userData.uid);
+                              reqMap.putIfAbsent('firstname', () => _currentFirstname??userData.firstname);
+                              reqMap.putIfAbsent('surname', () => _currentSurname??userData.surname);
+                              reqMap.putIfAbsent('phoneNumber', () => _currentPhoneNumber??userData.phoneNumber);
+                              reqMap.putIfAbsent('age', () => _currentAge??userData.age);
+                              reqMap.putIfAbsent('gender', () => _currentGender??userData.gender);
+                              reqMap.putIfAbsent('hasAllergies', () => _currentIsAllergic??userData.hasAllergies);
+                              reqMap.putIfAbsent('details', () => _currentDetails??userData.details);
                               if (_formKey.currentState.saveAndValidate()) {
-                                await DatabaseService(uid: user.uid)
-                                    .updateUserData(
-                                        _currentFirstname ?? userData.firstname,
-                                        _currentSurname ?? userData.surname,
-                                        userData.role,
-                                        _currentAge ?? userData.age);
-                                Navigator.pop(context);
-                                Flushbar(title:  "UPDATE",
-                                  message:  "Profil actualizat ",
-                                  duration:  Duration(seconds: 3),    )..show(context);
+                                await DatabaseService(uid: userData.uid)
+                                    .updateUserData(reqMap);
+                                  Navigator.pop(context);
+                                  Flushbar(title:  "UPDATE",
+                                    message:  "Profil actualizat ",
+                                    duration:  Duration(seconds: 3),    )..show(context);
+
+
                               }
                             }),
                       ],

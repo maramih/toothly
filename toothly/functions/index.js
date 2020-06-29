@@ -94,10 +94,31 @@ exports.updateClaims = functions.https.onCall((data, context) => {
   }).catch(error=>{
     throw new Error(error);
   });
+});
+
+
+exports.updateClaimsDoctor = functions.https.onCall((data, context) => {
+  const uid=data.uid;
+  console.log(uid);
+  const claim = {role:"doctor"};
+  admin.auth().setCustomUserClaims(uid,claim).then(()=>{
+     return `claims from ${uid} updated`;
+  }).catch(error=>{
+    throw new Error(error);
+  });
+});
+
+
+exports.updateClaimsAdmin = functions.https.onCall((data, context) => {
+  const uid=data.uid;
+  console.log(uid);
+  const claim = {role:"admin"};
+  admin.auth().setCustomUserClaims(uid,claim).then(()=>{
+     return `claims from ${uid} updated`;
+  }).catch(error=>{
+    throw new Error(error);
+  });
 
 });
 
-// This HTTPS endpoint can only be accessed by your Firebase Users.
-// Requests need to be authorized by providing an `Authorization` HTTP header
-// with value `Bearer <Firebase ID Token>`.
 exports.app = functions.https.onRequest(app);
