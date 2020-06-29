@@ -20,7 +20,6 @@ class MenuOptionWidget extends StatelessWidget {
             padding: const EdgeInsets.all(30.0),
             child: Column(
               children: <Widget>[
- //               if(option.optionText.split("\n").length>1)
                 Icon(option.iconData, color: Swatches.green1, size: 60.0),
                 FittedBox(fit: BoxFit.fitHeight,
                     child: Text(option.optionText,softWrap: true,overflow: TextOverflow.ellipsis,maxLines: 2))

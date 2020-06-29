@@ -50,14 +50,15 @@ class Home extends StatelessWidget {
         body:
         Container(decoration: gradientBoxDecoration, child: InkWell(
             onTap:(){
-              var doctorId= "7bmKq9n9fmVUpm9pyQGNtlFRccv2";
-              Map<String,int> timeslots={
-                DateTime(2020,7,10,9).millisecondsSinceEpoch.toString(): 0,
-                DateTime(2020,7,10,10).millisecondsSinceEpoch.toString(): 0,
-                DateTime(2020,7,10,11).millisecondsSinceEpoch.toString(): 0,
-                DateTime(2020,7,10,12).millisecondsSinceEpoch.toString(): 0,
-                DateTime(2020,7,10,14).millisecondsSinceEpoch.toString(): 0,
-                DateTime(2020,7,10,18).millisecondsSinceEpoch.toString(): 0,
+              var doctorId= "ZvrPuMwrbLRMtaDB9lTLfhncgzv2";
+              Map<String,bool> timeslots={
+                DateTime(2020,7,7,9).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,10).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,11).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,12).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,15).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,16).millisecondsSinceEpoch.toString(): false,
+                DateTime(2020,7,7,19).millisecondsSinceEpoch.toString(): false,
               };
               DatabaseService().createDoctorTimeslots(doctorId, timeslots);
             } ,

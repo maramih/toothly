@@ -104,11 +104,11 @@ class _RegisterView extends StatelessWidget{
                       onChanged: (value) {
                         state.handlePasswordOnChange(value);
                       }),
-                  Text(state.error,style: TextStyle(color: Swatches.myPrimaryRed,fontSize: 18,fontStyle: FontStyle.italic),),
+                  Text(state.error,style: TextStyle(color: Swatches.myPrimaryBlue,fontSize: 18,fontStyle: FontStyle.italic),),
                   SizedBox(height: 20.0),
                   SizedBox(height: 20.0),
                   RaisedButton(
-                    color: Swatches.myPrimaryRed,
+                    color: Swatches.myPrimaryBlue,
                     child: Text(
                       "Sign Up",
                       style: TextStyle(color: Colors.white),
@@ -122,7 +122,7 @@ class _RegisterView extends StatelessWidget{
                     },
                     icon: Icon(Icons.person),
                     label: Text('Login'),
-                    color: Swatches.myPrimaryRed,
+                    color: Swatches.myPrimaryBlue,
                     textColor: Colors.white,
                   ),
                 ]),

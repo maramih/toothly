@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toothly/models/user.dart';
+import 'package:toothly/services/push_notification_service.dart';
 import 'package:toothly/screens/dashboard/dashboard_options/appointments/appointments_calendar_events.dart';
+import 'package:toothly/screens/dashboard/dashboard_options/history_log.dart';
 import 'package:toothly/screens/dashboard/menu_option.dart';
 import 'package:toothly/screens/dashboard/menu_option_widget.dart';
 import 'package:toothly/services/database.dart';
@@ -9,11 +11,12 @@ import 'package:toothly/shared/ERoleTypes.dart';
 import 'package:toothly/shared/colors.dart';
 import 'package:toothly/shared/constants.dart';
 import 'package:toothly/shared/loading.dart';
-import 'package:toothly/shared/menuOptionsTypes.dart';
+import 'package:toothly/shared/menu_options_types.dart';
 import 'package:toothly/screens/dashboard/dashboard_options/users_lists/clients_list.dart';
 import 'package:toothly/shared/environment_variables.dart';
 
 import 'dashboard_options/appointments/appointments.dart';
+import 'dashboard_options/users_lists/clinic.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -24,17 +27,24 @@ class _DashboardState extends State<Dashboard> {
   List<MenuOption> menuOptions;
   User user;
 
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     user = Provider.of<User>(context);
     menuOptions= [
       option_appointments,
-      option2,
-      option1,
-      option3,
-      option4,
-      option5,
-      option_admin_calendar
+      option_calendar,
+      option_clients,
+      option_clinic_admin,
+      option_clinic,
+      option_admin_employees,
+      option_admin_calendar,
+      option_history_log
     ];
    return _DashboardView(this);
   }
@@ -47,17 +57,27 @@ class _DashboardState extends State<Dashboard> {
       case APPOINTMENTS:
         _handleViewAppointmentPressedButton();
         break;
-      case EMPLOYEES:
-        print(EMPLOYEES);
+      case CLINIC:
+        _handleClinicPressedButton();
         break;
       case CLIENTS:
         _handlePatientListPressedButton();
         break;
-
+      case HISTORY_LOG:
+        _handleHistoryLogPressedButton();
+        break;
       default:
         break;
     }
   }
+
+  void _handleClinicPressedButton() => Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => Clinic()));
+
+  void _handleHistoryLogPressedButton()=>  Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HistoryLog(user.uid)));
 
   void _handlePatientListPressedButton()=>  Navigator.push(
       context,
@@ -69,7 +89,7 @@ class _DashboardState extends State<Dashboard> {
 
   void _handleViewAppointmentPressedButton() => Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AppointmentsCalendarEvents(uid: user.uid,)));
+      MaterialPageRoute(builder: (context) => AppointmentsCalendarEvents()));
 
   List<Widget> _mapOptions(UserData userData){
         return menuOptions
@@ -106,9 +126,9 @@ class _DashboardView extends StatelessWidget{
               return Container(
                 child: Column(
                   children: <Widget>[
-                    _top(userData, w),
-                   // if(userData.isAdmin==true)
-                    if(userData.role==ERoleTypes.doctor.index)
+                    PushNotificationHandler(),
+                  _top(userData, w),
+                    if(state.user.role==ADMIN)
                     FlatButton.icon(
                         onPressed: () async {
                           showDialog(
@@ -122,9 +142,9 @@ class _DashboardView extends StatelessWidget{
                         },
                         icon: Icon(
                           Icons.person,
-                          color: Swatches.myPrimaryRed,
+                          color: Swatches.myPrimaryBlue,
                         ),
-                        label: Text('Admin Side',style: TextStyle(color: Swatches.myPrimaryRed),),color: Colors.white),
+                        label: Text('Admin Side',style: TextStyle(color: Swatches.myPrimaryBlue),),color: Colors.white),
                     _gridView(userData),
                   ],
                 ),
@@ -152,7 +172,8 @@ class _DashboardView extends StatelessWidget{
                   Row(
                     children: <Widget>[
                       CircleAvatar(
-                        backgroundImage: AssetImage('images/avatar.png'),
+                        backgroundColor: Colors.white,
+                        backgroundImage: AssetImage('images/logo.png'),
                         radius: 40,
                       ),
                       SizedBox(width: 20.0),

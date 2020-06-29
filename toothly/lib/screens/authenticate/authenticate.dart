@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toothly/screens/authenticate/register.dart';
 import 'package:toothly/screens/authenticate/sign_in.dart';
+import 'package:toothly/services/auth.dart';
 
 class Authenticate extends StatefulWidget {
   @override

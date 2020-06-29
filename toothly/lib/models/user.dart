@@ -37,22 +37,3 @@ class UserData{
 
 
 }
-
-class PersonnelData{
-  final String uid;
-  String firstname;
-  String surname;
-  String email;
-  String phoneNumber;
-  String photoUrl;
-  int role;
-  bool isAdmin=false;
-  String degree;
-  String licenseNumber;
-
-  PersonnelData({this.uid, this.firstname, this.surname, this.email,
-      this.phoneNumber, this.photoUrl, this.role, this.isAdmin, this.degree,
-      this.licenseNumber});
-
-
-}

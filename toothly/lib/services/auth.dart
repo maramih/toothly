@@ -1,10 +1,11 @@
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_admin/firebase_admin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:toothly/models/user.dart';
 import 'package:toothly/services/database.dart';
 import 'package:toothly/shared/ERoleTypes.dart';
+import 'package:toothly/shared/environment_variables.dart';
 
 
 
@@ -15,11 +16,26 @@ class AuthService {
   final HttpsCallable updateClaimsCallable=CloudFunctions.instance.getHttpsCallable(
     functionName: "updateClaims",
   );
+  final HttpsCallable updateClaimsAdminCallable=CloudFunctions.instance.getHttpsCallable(
+    functionName: "updateClaimsAdmin",
+  );
+  final HttpsCallable updateClaimsDoctorCallable=CloudFunctions.instance.getHttpsCallable(
+    functionName: "updateClaimsDoctor",
+  );
   static bool _signedInWithGoogle = false;
 
 
+  Future<String> get currentRole async {
+    final user = await FirebaseAuth.instance.currentUser();
+
+    // If refresh is set to true, a refresh of the id token is forced.
+    final idToken = await user.getIdToken(refresh: true);
+
+    return idToken.claims['role'];
+  }
+
   //create user object based on FirebaseUser
-  User _userFromFirebaseUser(FirebaseUser user) {
+  User _userFromFirebaseUser(FirebaseUser user)  {
     return user != null ? User(uid: user.uid) : null;
   }
 
@@ -57,7 +73,7 @@ class AuthService {
   }
 
 
-//register with email&pass
+//registerclient with email&pass
   Future registerWithEmailAndPssword(String email, String password) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
@@ -68,11 +84,56 @@ class AuthService {
       dynamic response= await updateClaimsCallable.call(<String, dynamic>{
         'uid': user.uid,
       });
-      //print("register claims--->"+response.toString());
 
       //create a new document for the user with uid
      await DatabaseService(uid: user.uid)
-         .updateUserData('N/A', 'N/A', ERoleTypes.client.index, 0);
+         .createUserData(NO_DATA, NO_DATA, ERoleTypes.client.index, user.email);
+
+      return _userFromFirebaseUser(user);
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  //register doctor with email&pass
+  Future registerDoctorWithEmailAndPssword(String email, String password) async {
+    try {
+      AuthResult result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      FirebaseUser user = result.user;
+
+      //adding a role claim in the db for the new user
+      dynamic response= await updateClaimsDoctorCallable.call(<String, dynamic>{
+        'uid': user.uid,
+      });
+
+      //create a new document for the user with uid
+      await DatabaseService(uid: user.uid)
+          .createUserData('N/A', 'N/A', ERoleTypes.doctor.index, user.email);
+
+      return _userFromFirebaseUser(user);
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  //register admin with email&pass
+  Future registerAdminWithEmailAndPssword(String email, String password) async {
+    try {
+      AuthResult result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      FirebaseUser user = result.user;
+
+      //adding a role claim in the db for the new user
+      dynamic response= await updateClaimsAdminCallable.call(<String, dynamic>{
+        'uid': user.uid,
+      });
+
+      //create a new document for the user with uid
+      await DatabaseService(uid: user.uid)
+          .createUserData('N/A', 'N/A', ERoleTypes.admin.index, user.email);
 
       return _userFromFirebaseUser(user);
     } catch (e) {
@@ -92,11 +153,9 @@ class AuthService {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      print("Button pressed2");
 
       final FirebaseUser user =
           (await _auth.signInWithCredential(credential)).user;
-      print("Button pressed2");
 
       if (user != null) {
         print(user != null);
@@ -111,7 +170,7 @@ class AuthService {
           user.sendEmailVerification();
           List<String>fullName=user.displayName.split(" ");
           int len=fullName.length-1;
-          dbs.updateUserData(fullName.getRange(0,len).join(" "), fullName[len], ERoleTypes.client.index, 0);
+          dbs.createUserData(fullName.getRange(0,len).join(" "), fullName[len], ERoleTypes.client.index, user.email);
         }
       return _userFromFirebaseUser(user);
     } catch (e) {
@@ -121,6 +180,11 @@ class AuthService {
     }
   }
 
+  //change password
+  Future changePassword(String email)async{
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
 //sign out
   Future singOut() async {
     try {
@@ -128,7 +192,7 @@ class AuthService {
         _signedInWithGoogle = false;
         await _googleSignIn.signOut();
       }
-        return await _auth.signOut();
+      return await _auth.signOut();
     } catch (e) {
       print(e.toString());
       return null;

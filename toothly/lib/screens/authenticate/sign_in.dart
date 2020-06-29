@@ -102,11 +102,11 @@ class _SignInView extends StatelessWidget{
                     onChanged: (value) {
                       state.handlePasswordOnChange(value);
                     }),
-                Text(state.error,style: TextStyle(color: Swatches.myPrimaryRed,fontSize: 18,fontStyle: FontStyle.italic),),
+                Text(state.error,style: TextStyle(color: Swatches.myPrimaryBlue,fontSize: 18,fontStyle: FontStyle.italic),),
                 SizedBox(height: 20.0),
                 SizedBox(height: 20.0),
                 RaisedButton(
-                  color: Swatches.myPrimaryRed,
+                  color: Swatches.myPrimaryBlue,
                   child: Text(
                     "Sign in",
                     style: TextStyle(color: Colors.white),
@@ -115,24 +115,25 @@ class _SignInView extends StatelessWidget{
                     state.handleSignInButton();
                   },
                 ),
+                SizedBox(height:20.0),
                 FlatButton.icon(
                   onPressed: () {
                     state.widget.toggleView();
                   },
                   icon: Icon(Icons.person),
                   label: Text('Register'),
-                  color: Swatches.myPrimaryRed,
+                  color: Swatches.myPrimaryBlue,
                   textColor: Colors.white,
                 ),
-                FlatButton.icon(
-                  onPressed: ()  {
-                    state.handleSignInWithGoogleButton();
-                  },
-                  icon: Icon(Icons.account_circle),
-                  label: Text('Sign in w/ Google'),
-                  color: Swatches.myPrimaryRed,
-                  textColor: Colors.white,
-                )
+//                FlatButton.icon(
+//                  onPressed: ()  {
+//                    state.handleSignInWithGoogleButton();
+//                  },
+//                  icon: Icon(Icons.account_circle),
+//                  label: Text('Sign in w/ Google'),
+//                  color: Swatches.myPrimaryBlue,
+//                  textColor: Colors.white,
+//                )
               ]),
             ),
             decoration: gradientBoxDecoration,
