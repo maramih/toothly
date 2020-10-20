@@ -37,7 +37,6 @@ class _NotificationsState extends State<Notifications> {
         message: "Programare confirmată",
         duration:  Duration(seconds: 3),    )..show(context);
 
-    // TODO: send notifications about status of request changed
   }
 
   void _handleRejectRequest(rid) {
@@ -92,7 +91,7 @@ class _NotificationsView extends StatelessWidget {
                                   subtitle: Text(
                                     "Dată: "+DateFormat("dd-MM-yyyy").format(request.date)+"\n"
                                       +"Oră: "+DateFormat("HH:mm").format(request.date)+"\n"
-                                      +"Status: "+EnumToString.parse(ERequestStatus.values[request.state]),
+                                      +"Status: "+enumToString(ERequestStatus.values[request.state]),
                                   ),
                                 ),
                                 Divider(),

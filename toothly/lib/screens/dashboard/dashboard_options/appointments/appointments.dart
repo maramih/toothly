@@ -135,7 +135,7 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
   CalendarController _controller;
   Map<DateTime, List<dynamic>> _events;
   List<dynamic> _selectedEvents;
-  DateTime _selectedDay = DateTime.now();
+  DateTime _selectedDay = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
   bool enable = true;
 
   @override
@@ -191,10 +191,16 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
             if (allTimeslots.isNotEmpty) {
               _events = _groupEvents(allTimeslots);
               print("its not empty " + _events.length.toString());
+              //TODO: see appointments events calendar and solve it like here
+              if(_events.keys.contains(_selectedDay))
+              _selectedEvents=_events[_selectedDay];
+              else
+                _selectedEvents=[];
             }
             return Column(
               children: <Widget>[
                 TableCalendar(
+                  initialCalendarFormat: CalendarFormat.twoWeeks,
                     events: _events,
                     calendarController: _controller,
                     calendarStyle: CalendarStyle(
@@ -237,54 +243,55 @@ class _AppointmentsCalendarState extends State<AppointmentsCalendar> {
                     onDaySelected: (day, events) =>
                         setState(() {
                           _selectedEvents = events;
-                          _selectedDay = day;
+                          _selectedDay = DateTime(day.year,day.month,day.day);
                         })),
-                Container(
-                  height: MediaQuery.of(context).size.height/6.5,
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: <Widget>[
-                      ...?_selectedEvents.map((event) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 4.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(
-                                    const Radius.circular(10.0)),
-                                color: Colors.white),
-                            child: Column(
-                              children: <Widget>[
-                                ListTile(
-                                  title: Text(event),
-                                  enabled: enable,
-                                  onTap: () {
-                                    setState(() {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AppointmentForm(
-                                                      currentDay: _selectedDay
-                                                          .isBefore(
-                                                          DateTime.now())
-                                                          ? DateTime.now()
-                                                          : _selectedDay,
-                                                      currentDoctor: widget
-                                                          ._initialDoctorValue,
-                                                      period: event
-                                                  )));
-                                    });
-                                  },
-                                )
-                              ],
-                            ),
+                ListView(
+                  shrinkWrap: true,
+                  children: <Widget>[
+                    ...?_selectedEvents.map((event) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(
+                                  const Radius.circular(10.0)),
+                              color: Colors.white),
+                          child: Column(
+                            children: <Widget>[
+                              ListTile(
+                                title: Text(event),
+                                enabled: enable,
+                                onTap: () {
+                                  setState(() {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                AppointmentForm(
+                                                    currentDay: _selectedDay
+                                                        .isBefore(
+                                                        DateTime.now())
+                                                        ? DateTime.now()
+                                                        : _selectedDay,
+                                                    currentDoctor: widget
+                                                        ._initialDoctorValue,
+                                                    period: event
+                                                )));
+                                  });
+                                },
+                              )
+                            ],
                           ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ) 
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ) ,
+                Container(
+                  height: 5.0,
+                  child: Text(" "),
+                )
 
               ],
             );
@@ -316,6 +323,7 @@ class _MyDialogState extends State<MyDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      //TODO: change size of container
       insetPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 220.0),
       child: Column(
         children: <Widget>[
@@ -326,11 +334,11 @@ class _MyDialogState extends State<MyDialog> {
             children: ERequestStatus.values
                 .map((statusValue) =>
                 RadioListTile<ERequestStatus>(
-                  title: Text(EnumToString.parse(statusValue)),
+                  title: Text(enumToString(statusValue)),
                   value: statusValue,
                   groupValue: group,
                   onChanged: (value) {
-                    print(EnumToString.parse(value));
+                    print(enumToString(value));
                     setState(() {
                       group = value;
                     });

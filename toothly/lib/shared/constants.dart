@@ -9,6 +9,7 @@ import 'package:toothly/screens/notifications/notifications.dart';
 import 'package:toothly/screens/profile/my_profile.dart';
 import 'package:toothly/screens/settings/settings.dart';
 import 'package:intl/intl.dart';
+import 'package:toothly/shared/ERequestStatus.dart';
 import 'colors.dart';
 import 'environment_variables.dart';
 
@@ -119,7 +120,7 @@ final bottomBar = Container(
         }),
         new LayoutBuilder(builder: (context, constraint){
           final user=Provider.of<User>(context);
-          if(user!= null && user.role!=PATIENT)
+          if(user.role==DOCTOR)
           return IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
             iconSize: iconSize,
@@ -128,6 +129,7 @@ final bottomBar = Container(
               Navigator.of(context).pushNamedAndRemoveUntil('/notifications', ModalRoute.withName('/'));
             },
           );
+          //TODO: solve the doctor main stuff
           else
             return IconButton(
               icon: Icon(Icons.info, color: Colors.white),
@@ -214,4 +216,21 @@ String todToString(dynamic tod){
   return tod.hour.toString()+':0'+tod.minute.toString();
   else
   return tod.hour.toString()+':'+tod.minute.toString();
+}
+
+String enumToString(ERequestStatus status){
+  switch(status){
+    case ERequestStatus.REQUESTED:
+      return "solicitată";
+    case ERequestStatus.VERIFIED:
+      return "confirmată";
+    case ERequestStatus.IN_PROGRESS:
+      return "în desfășurare";
+    case ERequestStatus.CANCELED:
+      return "anulată";
+    case ERequestStatus.DONE:
+      return "terminată";
+    case ERequestStatus.REJECTED:
+      return "refuzată";
+  }
 }

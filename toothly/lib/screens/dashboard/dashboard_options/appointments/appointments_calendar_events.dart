@@ -24,7 +24,7 @@ class _AppointmentsCalendarEventsState
   CalendarController _controller;
   Map<DateTime, List<dynamic>> _events;
   List<dynamic> _selectedEvents;
-  DateTime _selectedDay = DateTime.now();
+  DateTime _selectedDay = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
 
   @override
   void initState() {
@@ -52,6 +52,10 @@ class _AppointmentsCalendarEventsState
                 if (allRequests != []) {
                   _events = _groupEvents(allRequests);
                   print("its not empty " + _events.length.toString());
+                  if(_events.keys.contains(_selectedDay))
+                    _selectedEvents=_events[_selectedDay];
+                  else
+                    _selectedEvents=[];
                   return Column(
                     children: <Widget>[
                       TableCalendar(
@@ -61,7 +65,7 @@ class _AppointmentsCalendarEventsState
                               canEventMarkersOverflow: true,
                               selectedColor: Swatches.myPrimaryBlue,
                               todayColor: Swatches.myPrimaryMint,
-                              markersColor: Swatches.green3),
+                              markersColor: Colors.white),
                           headerStyle: HeaderStyle(
                               centerHeaderTitle: true,
                               leftChevronIcon: Icon(
@@ -96,7 +100,7 @@ class _AppointmentsCalendarEventsState
                           initialSelectedDay: _selectedDay ?? DateTime.now(),
                           onDaySelected: (day, events) => setState(() {
                             _selectedEvents = events;
-                            _selectedDay = day;
+                            _selectedDay = DateTime(day.year,day.month,day.day);
                           })),
                       Center(
                           child: Text(_selectedEvents.length.toString() +
@@ -132,13 +136,13 @@ class _AppointmentsCalendarEventsState
                                             DateFormat("HH:mm").format(event.date) +
                                             "\n" +
                                             "Status: " +
-                                            EnumToString.parse(ERequestStatus
+                                            enumToString(ERequestStatus
                                                 .values[event.state])),
                                         leading: Padding(
                                           padding: const EdgeInsets.fromLTRB(
                                               0, 15.0, 0, 0),
                                           child: Icon(
-                                            Icons.add_box,
+                                            Icons.info_outline,
                                             size: 40,
                                           ),
                                         ),
